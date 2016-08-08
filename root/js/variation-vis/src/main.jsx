@@ -29,6 +29,7 @@ class App extends React.Component {
       // track data
       tracks: [],
       activeTrackModal: null,
+      layout: 'mirror'
 
      };
   }
@@ -44,8 +45,11 @@ class App extends React.Component {
     const model = new HomologyModel(geneID);
 
     function _getTrackIndex(trackName) {
-      const tracks = ['sourceDNA', 'sourceVariation', 'sourceProtein', 'conservation',
-        'targetProtein', 'targetVariation', 'targetDNA'];
+      const tracks = this.state.layout === 'mirror' ?
+        ['sourceDNA', 'sourceVariation', 'sourceProtein', 'conservation',
+          'targetProtein', 'targetVariation', 'targetDNA'] :
+        ['sourceDNA', 'targetDNA', 'sourceVariation', 'targetVariation', 'sourceProtein', 'conservation',
+          'targetProtein'];
       return tracks.findIndex((knowTrackName) => knowTrackName === trackName);
     }
 
@@ -316,10 +320,12 @@ class App extends React.Component {
         </div>
         <FormGroup bsClass="aaa form-group" controlId="formControlsSelect">
           <ControlLabel srOnly={true}>Select</ControlLabel>
-          <FormControl componentClass="select" placeholder="select"
+          <FormControl
+            onChange={(event) => this.handleLayoutChange(event)}
+            componentClass="select" placeholder="select"
             style={{fontSize:14, height: 40}}>
-            <option value="select">select</option>
-            <option value="other">...</option>
+            <option value="pairwise">Pairwise layout</option>
+            <option value="mirror">Mirror layout</option>
           </FormControl>
         </FormGroup>
       </form>
@@ -350,6 +356,13 @@ class App extends React.Component {
     } else {
       return null
     }
+  }
+
+  handleLayoutChange = (event) => {
+    const layoutName = event.target.value;
+    this.setState({
+      layout: layoutName
+    });
   }
 
 
