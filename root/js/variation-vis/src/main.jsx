@@ -1,7 +1,10 @@
 import "babel-polyfill";
 import React from 'react';
 import { render, unmountComponentAtNode } from 'react-dom';
-import { Button, ButtonGroup, ButtonToolbar, Glyphicon } from 'react-bootstrap';
+import { Button, ButtonGroup, ButtonToolbar, Glyphicon,
+  FormGroup,
+  ControlLabel,
+  FormControl } from 'react-bootstrap';
 import Viewer from './components/Viewer';
 import TrackLegendModal from './components/TrackLegendModal';
 import TrackLabel from './components/TrackLabel';
@@ -296,17 +299,30 @@ class App extends React.Component {
 
   renderToolbar = () => {
     return (<div style={{margin: "20px auto 20px 250px", height: 30}}>
-      <ButtonToolbar>
-        <ButtonGroup bsSize="large">
-          <Button onClick={() => this._viewerComponent.getZoomHandler(2)()}><Glyphicon glyph="zoom-in" /></Button>
-          <Button onClick={() => this._viewerComponent.getZoomHandler(0.5)()}><Glyphicon glyph="zoom-out" /></Button>
-          <Button onClick={() => this._viewerComponent.getPanHandler(0.5)()}><Glyphicon glyph="chevron-left" /></Button>
-          <Button onClick={() => this._viewerComponent.getPanHandler(-0.5)()}><Glyphicon glyph="chevron-right" /></Button>
-       </ButtonGroup>
-        <ButtonGroup>
-          <Button onClick={() => this._viewerComponent.handleZoomPanReset()} bsSize="large" style={{fontSize:14}}>Reset</Button>
-        </ButtonGroup>
-      </ButtonToolbar>
+
+      <form className="form-inline">
+        <div style={{display: 'inline-block'}}>
+          <ButtonToolbar>
+            <ButtonGroup bsSize="large">
+              <Button onClick={() => this._viewerComponent.getZoomHandler(2)()}><Glyphicon glyph="zoom-in" /></Button>
+              <Button onClick={() => this._viewerComponent.getZoomHandler(0.5)()}><Glyphicon glyph="zoom-out" /></Button>
+              <Button onClick={() => this._viewerComponent.getPanHandler(0.5)()}><Glyphicon glyph="chevron-left" /></Button>
+              <Button onClick={() => this._viewerComponent.getPanHandler(-0.5)()}><Glyphicon glyph="chevron-right" /></Button>
+           </ButtonGroup>
+            <ButtonGroup>
+              <Button onClick={() => this._viewerComponent.handleZoomPanReset()} bsSize="large" style={{fontSize:14}}>Reset</Button>
+            </ButtonGroup>
+          </ButtonToolbar>
+        </div>
+        <FormGroup bsClass="aaa form-group" controlId="formControlsSelect">
+          <ControlLabel srOnly={true}>Select</ControlLabel>
+          <FormControl componentClass="select" placeholder="select"
+            style={{fontSize:14, height: 40}}>
+            <option value="select">select</option>
+            <option value="other">...</option>
+          </FormControl>
+        </FormGroup>
+      </form>
     </div>);
   }
 
@@ -469,4 +485,3 @@ function displayView(geneID, elementId) {
 export {
   displayView
 }
-
