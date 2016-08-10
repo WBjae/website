@@ -475,7 +475,8 @@ export default class Viewer extends React.Component {
                   height={DEFAULT_SVG_HEIGHT}
                 /> : null
               }
-              <Ruler/>
+              <Ruler
+                height={DEFAULT_SVG_HEIGHT}/>
               <g>
               {
                 React.Children.map(this.props.children, (child) => {

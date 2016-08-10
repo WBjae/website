@@ -5,10 +5,9 @@ const CharApparentWidth = 8;
 
 export default class Ruler extends React.Component {
 
-  // static propTypes = {
-  //   x: React.PropTypes.number,
-  //   y: React.PropTypes.number,
-  // }
+  static propTypes = {
+    height: React.PropTypes.number,
+  }
 
   static contextTypes = {
     getXMin: React.PropTypes.func,
@@ -49,8 +48,8 @@ export default class Ruler extends React.Component {
           tickPositions.map((position, i) => {
             return <line key={`tick-${i}`}
               x1={position} y1={yOffset}
-              x2={position} y2={yOffset + 10}
-              stroke="black"
+              x2={position} y2={yOffset + this.props.height}
+              stroke="#cccccc"
               strokeWidth={strokeWidth}/>
           })
         }
