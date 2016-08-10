@@ -49,19 +49,19 @@ export default class VariationTrack extends React.Component {
     this._updateTrackHeight(this.props);
   }
 
-  // componentWillReceiveProps(nextProps) {
-  //   this._updateTrackHeight(nextProps);
-  // }
+  componentWillReceiveProps(nextProps) {
+    this._updateTrackHeight(nextProps);
+  }
 
   _updateTrackHeight = (nextProps) => {
-    const {data, index, outerHeight, onHeightChange} = nextProps;
+    const {data, id, outerHeight, onHeightChange} = nextProps;
     if (data){
       const binLengths = this._bin(data).map((bin) => bin.data.length);
       const numOfSubtracks = Math.max(...binLengths, 1);
       const newTrackHeight = 20 + numOfSubtracks * SUBTRACK_HEIGHT;
       if (newTrackHeight !== outerHeight) {
-        console.log('will initiate height change')
-        onHeightChange(index, newTrackHeight);
+        console.log(`new Height: ${newTrackHeight}, currentHeight ${outerHeight}`)
+        onHeightChange(id, newTrackHeight);
       }
     }
   }

@@ -44,14 +44,6 @@ class App extends React.Component {
   _getData(geneID) {
     const model = new HomologyModel(geneID);
 
-    function _getTrackIndex(trackName) {
-      const tracks = this.state.layout === 'mirror' ?
-        ['sourceDNA', 'sourceVariation', 'sourceProtein', 'conservation',
-          'targetProtein', 'targetVariation', 'targetDNA'] :
-        ['sourceDNA', 'targetDNA', 'sourceVariation', 'targetVariation', 'sourceProtein', 'conservation',
-          'targetProtein'];
-      return tracks.findIndex((knowTrackName) => knowTrackName === trackName);
-    }
 
     const referencePromise = model.getAlignedDNA().then((data) => {
       const referenceSequence = data.source.align_seq;
@@ -60,14 +52,14 @@ class App extends React.Component {
       });
 
       this._setTrackState({
-        index: _getTrackIndex('sourceDNA'),
+        id: 'sourceDNA',
         name: `Transcript: ${data.source.protein_id}`,
         sequence: referenceSequence
       });
 
       // show homolog sequence
       this._setTrackState({
-        index: _getTrackIndex('targetDNA'),
+        id: 'targetDNA',
         name: `Transcript: ${data.target.protein_id}`,
         sequence: data.target.align_seq
       });
@@ -88,7 +80,7 @@ class App extends React.Component {
       return Promise.all([sourceGeneModel.getSummary(), sourceGeneModel.getAlignedCDSs()]);
     }).then(([summary, cdss]) => {
       this._setTrackState({
-        index: _getTrackIndex('sourceDNA'),
+        id: 'sourceDNA',
         data: cdss.map((cds, i) => {
           return {...cds, tip: 'CDS' + i};
         }),
@@ -102,7 +94,7 @@ class App extends React.Component {
       return Promise.all([targetGeneModel.getSummary(), targetGeneModel.getAlignedCDSs()]);
     }).then(([summary, cdss]) => {
       this._setTrackState({
-        index: _getTrackIndex('targetDNA'),
+        id: 'targetDNA',
         data: cdss.map((cds, i) => {
           return {...cds, tip: 'CDS' + i};
         }),
@@ -116,7 +108,7 @@ class App extends React.Component {
     // load protein sequence track
     model.getAlignedSourceProtein().then((data) => {
       this._setTrackState({
-        index: _getTrackIndex('sourceProtein'),
+        id: 'sourceProtein',
         name: `Protein: ${data.protein_id}`,
         sequence: data.align_seq,
         trackComponent: AlignmentTrack
@@ -124,7 +116,7 @@ class App extends React.Component {
     });
     model.getAlignedTargetProtein().then((data) => {
       this._setTrackState({
-        index: _getTrackIndex('targetProtein'),
+        id: 'targetProtein',
         name: `Protein: ${data.protein_id}`,
         sequence: data.align_seq,
         trackComponent: AlignmentTrack
@@ -142,7 +134,7 @@ class App extends React.Component {
       return Promise.all([sourceGeneModel.getSummary(), sourceGeneModel.getAlignedDomains()]);
     }).then(([summary, domains]) => {
       this._setTrackState({
-        index: _getTrackIndex('sourceProtein'),
+        id: 'sourceProtein',
         data: domains.map((d) => {
           return {
             ...d,
@@ -158,7 +150,7 @@ class App extends React.Component {
       return Promise.all([targetGeneModel.getSummary(), targetGeneModel.getAlignedDomains()]);
     }).then(([summary, domains]) => {
       this._setTrackState({
-        index: _getTrackIndex('targetProtein'),
+        id: 'targetProtein',
         data: domains.map((d) => {
           return {
             ...d,
@@ -177,7 +169,7 @@ class App extends React.Component {
       const targetSequence = targetData.align_seq;
 
       this._setTrackState({
-        index: _getTrackIndex('conservation'),
+        id: 'conservation',
         sequenceLength: sourceSequence.length,
         sequenceList: [sourceSequence, targetSequence],
         trackComponent: ProteinConservationTrack,
@@ -193,7 +185,7 @@ class App extends React.Component {
       return Promise.all([speciesPromise, variationsPromise, proteinLengthPromise]);
     }).then(([summary, variations, proteinLength]) => {
       const trackData = {
-        index: _getTrackIndex('sourceVariation'),
+        id: 'sourceVariation',
         sequenceLength: proteinLength,
         data: variations,
         trackComponent: VariationTrack,
@@ -227,7 +219,7 @@ class App extends React.Component {
       return Promise.all([speciesPromise, variationsPromise, proteinLengthPromise]);
     }).then(([summary, variations, proteinLength]) => {
       const trackData = {
-        index: _getTrackIndex('targetVariation'),
+        id: 'targetVariation',
         sequenceLength: proteinLength,
         data: variations,
         trackComponent: VariationTrack,
@@ -239,10 +231,14 @@ class App extends React.Component {
   }
 
   _setTrackState(data, callback) {
-    const index = data.index;
 
     // this returns a new set of track data, without modifying the original
     this.setState((prevState) => {
+      const foundIndex = prevState.tracks.findIndex((trackData) => {
+        return trackData.id === data.id;
+      });
+      const index = foundIndex > -1 ? foundIndex : prevState.tracks.length;
+
       const newTrackData = {
         ...prevState.tracks[index],
         ...data
@@ -258,8 +254,25 @@ class App extends React.Component {
 
   }
 
+  _getOrderedTracks() {
+    const _getTrackIndex = (trackName) => {
+      const tracks = this.state.layout === 'mirror' ?
+        ['sourceDNA', 'sourceVariation', 'sourceProtein', 'conservation',
+          'targetProtein', 'targetVariation', 'targetDNA'] :
+        ['sourceDNA', 'targetDNA', 'sourceVariation', 'targetVariation', 'sourceProtein', 'conservation',
+          'targetProtein'];
+      return tracks.findIndex((knowTrackName) => knowTrackName === trackName);
+    }
+
+    const tracks = [...this.state.tracks].sort((trackDataA, trackDataB) => {
+      return _getTrackIndex(trackDataA.id) < _getTrackIndex(trackDataB.id);
+    });
+
+    return tracks;
+  }
+
   _getTrackYPosition(trackIndex, trackYOffset=50) {
-    const tracksAbove = this.state.tracks.slice(0, trackIndex);
+    const tracksAbove = this._getOrderedTracks().slice(0, trackIndex);
     const yPosition =  tracksAbove.reduce((accumulator, trackData) => {
       return accumulator + (trackData.outerHeight || 60);
     }, trackYOffset);
@@ -277,10 +290,9 @@ class App extends React.Component {
     }
   }
 
-  handleTrackHeightChange = (trackIndex, newHeight) => {
-    console.log(`trackHeight change handler called with: ${trackIndex} and newHeight=${newHeight}`);
+  handleTrackHeightChange = (trackId, newHeight) => {
     this._setTrackState({
-      index: trackIndex,
+      id: trackId,
       outerHeight: newHeight
     });
   }
@@ -324,8 +336,8 @@ class App extends React.Component {
             onChange={(event) => this.handleLayoutChange(event)}
             componentClass="select" placeholder="select"
             style={{fontSize:14, height: 40}}>
-            <option value="pairwise">Pairwise layout</option>
             <option value="mirror">Mirror layout</option>
+            <option value="pairwise">Pairwise layout</option>
           </FormControl>
         </FormGroup>
       </form>
@@ -333,7 +345,7 @@ class App extends React.Component {
   }
 
   renderTrackLabels() {
-    return this.state.tracks.map((trackData, index ) => {
+    return this._getOrderedTracks().map((trackData, index ) => {
       return <TrackLabel
         key={`track-label-${index}`}
         index={index}
@@ -427,6 +439,8 @@ class App extends React.Component {
 
 //    console.log(this.state.tracks)
 
+    const tracks = this._getOrderedTracks();
+
     return (
       <div className="bootstrap-style">
         {
@@ -451,12 +465,13 @@ class App extends React.Component {
               left: trackLabelColumnWidth
             }}>
             {
-              this.state.tracks.map((trackData) => {
+              tracks.map((trackData, index) => {
                 const showTrack = trackData && (trackData.sequence || trackData.sequenceLength);
                 const TrackComponent = trackData.trackComponent || BasicTrack;
-                const {index} = trackData; // note use the index contained in the data
+//                const {index} = trackData; // note use the index contained in the data
                 return showTrack ? <TrackComponent
                   {...trackData}
+                  id={trackData.id}
                   index={index}
                   key={`track${index}`}
                   tip={trackData.tip}
