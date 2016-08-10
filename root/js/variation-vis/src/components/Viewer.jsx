@@ -451,15 +451,6 @@ export default class Viewer extends React.Component {
               {
                 /* visibile region background */
                 <rect
-                  x={this._getXMin() - this.state.fullWidth}
-                  y={0}
-                  width={3 * this.state.fullWidth}
-                  height={DEFAULT_SVG_HEIGHT}
-                  fill={'#cccccc'}/>
-              }
-              {
-                /* visibile region background */
-                <rect
                   x={this._getXMin()}
                   y={0}
                   width={this._getXMax() - this._getXMin()}
@@ -501,6 +492,26 @@ export default class Viewer extends React.Component {
                 })
               }
               </g>
+              {
+                /* loading region foreground */
+                <rect
+                  x={this._getXMin() - this.state.fullWidth}
+                  y={0}
+                  width={this.state.fullWidth}
+                  height={DEFAULT_SVG_HEIGHT}
+                  opacity={0.7}
+                  fill={'#cccccc'}/>
+              }
+              {
+                /* loading region foreground */
+                <rect
+                  x={this._getXMax()}
+                  y={0}
+                  width={this.state.fullWidth}
+                  height={DEFAULT_SVG_HEIGHT}
+                  opacity={0.7}
+                  fill={'#cccccc'}/>
+              }
             </g>
           </svg>
         </svg>
