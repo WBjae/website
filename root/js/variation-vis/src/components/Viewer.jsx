@@ -3,7 +3,7 @@ import React from 'react';
 import Tooltip from './Tooltip';
 import Ruler from './Ruler';
 import PrettyTrackSVGFilter from './PrettyTrackSVGFilter';
-import MarkerBar from './MarkerBar';
+import Marker from './Marker';
 import { CoordinateMappingHelper } from '../Utils';
 import svgPanZoom from 'svg-pan-zoom';
 import Hammer from 'hammerjs';
@@ -458,7 +458,7 @@ export default class Viewer extends React.Component {
                   fill={'#ffffff'}/>
               }
               {
-                this.state.referenceSequenceLength ? <MarkerBar
+                this.state.referenceSequenceLength ? <Marker
                   coordinateMapping={new CoordinateMappingHelper.DefaultCoordinateMapping({
                     sequenceLength: this.state.referenceSequenceLength / 3,
                     svgWidth: this.state.fullWidth})}

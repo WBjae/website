@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import BasicTrack from '../Tracks';
 
-export default class MarkerBar extends React.Component {
+export default class Marker extends React.Component {
 
   static contextTypes = {
     toWidth: React.PropTypes.func
