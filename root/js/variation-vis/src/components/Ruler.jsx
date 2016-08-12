@@ -60,7 +60,7 @@ export default class Ruler extends React.Component {
             const labelValue = this.context.toReferenceUnit ? this.context.toReferenceUnit(position) : null;
             const labelText = isNaN(labelValue) ? null : this._formatLabelText(labelValue);
             return labelText && labelText !== 0 ? <text key={`tick-${i}`}
-              x={position} y={yOffset+20}
+              x={position} y={yOffset+ 25}
               fontSize={12}
               textAnchor="middle"
               fill="black"

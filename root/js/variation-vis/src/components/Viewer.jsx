@@ -424,7 +424,6 @@ export default class Viewer extends React.Component {
   render (){
     return (
       <div ref={(component) => this._viewerContainer = component}
-        onMouseMove={this._handleMouseMove}
         style={{
           position: 'relative',
           width: this.state.viewWidth,
@@ -492,6 +491,14 @@ export default class Viewer extends React.Component {
                 })
               }
               </g>
+              <rect
+                onMouseMove={this._handleMouseMove}
+                x={this._getXMin() - this.state.fullWidth}
+                y={0}
+                width={3 * this.state.fullWidth}
+                height={12}
+                opacity={0.1}
+                fill={'#000'}/>
               {
                 /* loading region foreground */
                 <rect
