@@ -29,3 +29,16 @@ export function toWormBaseURL({taxonomy, class: wormbaseClass, id}) {
 export function capitalize(text){
   return text.charAt(0).toUpperCase() + text.slice(1);
 }
+
+export function formatSpeciesName(speciesName) {
+  const [genus, species, bioproject] = speciesName.split(/\s|_/);
+  console.log(speciesName);
+  console.log(bioproject);
+  if (bioproject) {
+    const genusString = capitalize(genus.charAt(0));
+    return `${genusString}. ${species} (${bioproject})`;
+  } else {
+    const genusString = capitalize(genus);
+    return `${genusString} ${species}`;
+  }
+}

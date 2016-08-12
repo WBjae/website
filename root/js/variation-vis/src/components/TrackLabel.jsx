@@ -1,6 +1,6 @@
 import React from 'react';
 import { Button, ButtonGroup, ButtonToolbar, Glyphicon, Label } from 'react-bootstrap';
-import { capitalize } from '../Utils';
+import { capitalize, formatSpeciesName } from '../Utils';
 
 export default class TrackLabel extends React.Component {
 
@@ -19,7 +19,7 @@ export default class TrackLabel extends React.Component {
 
   _renderSpeciesLabel(species) {
     if (species) {
-      const speciesName = capitalize(species.replace(/_/g, ' '));
+      const speciesName = formatSpeciesName(species);
       return <Label style={{backgroundColor: this._getSpeciesColor(species)}}>
           {speciesName}
         </Label>;
