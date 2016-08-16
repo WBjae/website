@@ -411,12 +411,18 @@ export default class Viewer extends React.Component {
     }, 200);
   }
 
-  _handleMouseMove = (event) => {
+  _handleMarkerBarMouseMove = (event) => {
     const containerRect = this._viewerContainer.getBoundingClientRect();
     const viewOffset = event.clientX - containerRect.left;
     const svgOffset = viewOffset * this.state.fullWidth / (this.state.zoomFactor * this.state.viewWidth) ;
     this.setState({
       cursorSVGCoordinate: svgOffset + this._getXMin()
+    })
+  }
+
+  _handleMarkerBarMouseOut = (event) => {
+    this.setState({
+      cursorSVGCoordinate: 0
     })
   }
 
@@ -492,7 +498,8 @@ export default class Viewer extends React.Component {
               }
               </g>
               <rect
-                onMouseMove={this._handleMouseMove}
+                onMouseMove={this._handleMarkerBarMouseMove}
+                onMouseOut={this._handleMarkerBarMouseOut}
                 x={this._getXMin() - this.state.fullWidth}
                 y={0}
                 width={3 * this.state.fullWidth}
