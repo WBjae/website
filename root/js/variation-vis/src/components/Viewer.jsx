@@ -37,7 +37,7 @@ export default class Viewer extends React.Component {
       // zoomPanEvents: [],
 
       //marker bar
-      cursorSVGCoordinate: 0,
+      cursorSVGCoordinate: - Infinity,
 
      };
   }
@@ -422,7 +422,7 @@ export default class Viewer extends React.Component {
 
   _handleMarkerBarMouseOut = (event) => {
     this.setState({
-      cursorSVGCoordinate: 0
+      cursorSVGCoordinate: - Infinity
     })
   }
 
