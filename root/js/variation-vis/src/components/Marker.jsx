@@ -7,12 +7,12 @@ export default class Marker extends React.Component {
     toWidth: React.PropTypes.func,
     getXMin: React.PropTypes.func,
     getXMax: React.PropTypes.func,
+    getEventSVGCoords: React.PropTypes.func,
   };
 
   static propTypes = {
     cursorSVGCoordinate: React.PropTypes.number.isRequired,
-    onMarkerBarMouseMove: React.PropTypes.func,
-    onMarkerBarMouseOut: React.PropTypes.func,
+    onMarkerChange: React.PropTypes.func,
     // sequenceLength: React.PropTypes.number,
     coordinateMapping: React.PropTypes.shape({
       toSVGCoordinate: React.PropTypes.func,
@@ -52,6 +52,30 @@ export default class Marker extends React.Component {
     }
   }
 
+  _renderBar = (props) => {
+    return (
+      <rect
+        {...props}
+        x={this.context.getXMin()}
+        y={0}
+        width={this.context.getXMax() - this.context.getXMin()}
+        height={12}/>
+    )
+  }
+
+  _handleMarkerBarMouseMove = (event) => {
+    this.props.onMarkerChange({
+      type: 'MARKER_UPDATE',
+      cursorSVGCoordinate: this.context.getEventSVGCoords(event).x
+    })
+  }
+
+  _handleMarkerBarMouseOut = (event) => {
+    this.props.onMarkerChange({
+      type: 'MARKER_DELETE'
+    });
+  }
+
   render() {
     const barCoordinates = this._padSequneceCoordinates(this._cursorSequenceCoordinate())
     return (<g>
@@ -66,24 +90,24 @@ export default class Marker extends React.Component {
           y={0}
           height={this.props.height || 600}/>
       }
-      <rect
-        x={this.context.getXMin()}
-        y={0}
-        width={this.context.getXMax() - this.context.getXMin()}
-        height={12}
-        opacity={0.1}
-        fill={'#000'}/>
+      {
+        // marker bar background
+        this._renderBar({
+          opacity: 0.1,
+          fill: '#000'
+        })
+      }
       {
         this.props.children
       }
-      <rect
-        onMouseMove={this.props.onMarkerBarMouseMove}
-        onMouseOut={this.props.onMarkerBarMouseOut}
-        x={this.context.getXMin()}
-        y={0}
-        width={this.context.getXMax() - this.context.getXMin()}
-        height={12}
-        fill={'transparent'}/>
+      {
+        // marker bar overlay
+        this._renderBar({
+          fill: 'transparent',
+          onMouseMove: this._handleMarkerBarMouseMove,
+          onMouseOut: this._handleMarkerBarMouseOut
+        })
+      }
       </g>)
   }
 }

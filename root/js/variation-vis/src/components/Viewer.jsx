@@ -49,6 +49,7 @@ export default class Viewer extends React.Component {
     getXMax: React.PropTypes.func,
     //toApparentWidth: React.PropTypes.func,
     toWidth: React.PropTypes.func,
+    getEventSVGCoords: React.PropTypes.func,
     toReferenceUnit: React.PropTypes.func,
     isZoomPanOccuring: React.PropTypes.bool,
   }
@@ -60,6 +61,7 @@ export default class Viewer extends React.Component {
       getXMin: this._getXMin,
       getXMax: this._getXMax,
       toWidth: this._toWidth,
+      getEventSVGCoords: this._getEventSVGCoords,
       toReferenceUnit: this._toReferenceUnit,
       isZoomPanOccuring: this.state.isZoomPanOccuring
     }
@@ -375,6 +377,17 @@ export default class Viewer extends React.Component {
     return apparentWidth * this.state.fullWidth / apparentFullWidth;
   }
 
+  _getEventSVGCoords = (event) => {
+    const containerRect = this._viewerContainer.getBoundingClientRect();
+    const offsetX = event.clientX - containerRect.left;
+    const offsetY = event.clientY - containerRect.top;
+    const svgOffsetX = offsetX * this.state.fullWidth / (this.state.zoomFactor * this.state.viewWidth);
+    return {
+      x: svgOffsetX + this._getXMin(),
+      y: offsetY
+    }
+  }
+
   // convert svg internal coordinate to length in the domain logic (reference)
   _toReferenceUnit = (width) => {
     return width / this.state.unitLength;
@@ -411,19 +424,19 @@ export default class Viewer extends React.Component {
     }, 200);
   }
 
-  _handleMarkerBarMouseMove = (event) => {
-    const containerRect = this._viewerContainer.getBoundingClientRect();
-    const viewOffset = event.clientX - containerRect.left;
-    const svgOffset = viewOffset * this.state.fullWidth / (this.state.zoomFactor * this.state.viewWidth) ;
-    this.setState({
-      cursorSVGCoordinate: svgOffset + this._getXMin()
-    })
-  }
 
-  _handleMarkerBarMouseOut = (event) => {
-    this.setState({
-      cursorSVGCoordinate: null
-    })
+  _handleMarkerChange = (markerChangeAction) => {
+    const {type, cursorSVGCoordinate} = markerChangeAction;
+    if (type === 'MARKER_DELETE') {
+      this.setState({
+        cursorSVGCoordinate: null
+      })
+    } else if (type === 'MARKER_UPDATE') {
+      this.setState({
+        cursorSVGCoordinate: cursorSVGCoordinate
+      })
+    }
+
   }
 
 
@@ -468,8 +481,7 @@ export default class Viewer extends React.Component {
                     sequenceLength: this.state.referenceSequenceLength / 3,
                     svgWidth: this.state.fullWidth})}
                   cursorSVGCoordinate={this.state.cursorSVGCoordinate}
-                  onMarkerBarMouseMove={this._handleMarkerBarMouseMove}
-                  onMarkerBarMouseOut={this._handleMarkerBarMouseOut}
+                  onMarkerChange={this._handleMarkerChange}
                   height={DEFAULT_SVG_HEIGHT}>
                   <Ruler
                     height={DEFAULT_SVG_HEIGHT}/>
