@@ -4,11 +4,15 @@ import BasicTrack from '../Tracks';
 export default class Marker extends React.Component {
 
   static contextTypes = {
-    toWidth: React.PropTypes.func
+    toWidth: React.PropTypes.func,
+    getXMin: React.PropTypes.func,
+    getXMax: React.PropTypes.func,
   };
 
   static propTypes = {
     cursorSVGCoordinate: React.PropTypes.number.isRequired,
+    onMarkerBarMouseMove: React.PropTypes.func,
+    onMarkerBarMouseOut: React.PropTypes.func,
     // sequenceLength: React.PropTypes.number,
     coordinateMapping: React.PropTypes.shape({
       toSVGCoordinate: React.PropTypes.func,
@@ -23,7 +27,7 @@ export default class Marker extends React.Component {
   }
 
   _padSequneceCoordinates = (startSequenceCoord, endSequenceCoord) => {
-    if (typeof variable === 'undefined') {
+    if (typeof endSequenceCoord === 'undefined') {
       endSequenceCoord = startSequenceCoord + 1;
     }
 
@@ -50,14 +54,36 @@ export default class Marker extends React.Component {
 
   render() {
     const barCoordinates = this._padSequneceCoordinates(this._cursorSequenceCoordinate())
-    return (<BasicTrack
-      opacity={0.8}
-      data={[{
-        ...barCoordinates,
-        color: '#fd0'
-      }]}
-      coordinateMapping={this.props.coordinateMapping}
-      y={0}
-      height={this.props.height || 600}/>)
+    return (<g>
+      {
+        this.props.cursorSVGCoordinate === null ? null : <BasicTrack
+          opacity={0.8}
+          data={[{
+            ...barCoordinates,
+            color: '#fd0'
+          }]}
+          coordinateMapping={this.props.coordinateMapping}
+          y={0}
+          height={this.props.height || 600}/>
+      }
+      <rect
+        x={this.context.getXMin()}
+        y={0}
+        width={this.context.getXMax() - this.context.getXMin()}
+        height={12}
+        opacity={0.1}
+        fill={'#000'}/>
+      {
+        this.props.children
+      }
+      <rect
+        onMouseMove={this.props.onMarkerBarMouseMove}
+        onMouseOut={this.props.onMarkerBarMouseOut}
+        x={this.context.getXMin()}
+        y={0}
+        width={this.context.getXMax() - this.context.getXMin()}
+        height={12}
+        fill={'transparent'}/>
+      </g>)
   }
 }

@@ -37,7 +37,7 @@ export default class Viewer extends React.Component {
       // zoomPanEvents: [],
 
       //marker bar
-      cursorSVGCoordinate: - Infinity,
+      cursorSVGCoordinate: null,
 
      };
   }
@@ -422,7 +422,7 @@ export default class Viewer extends React.Component {
 
   _handleMarkerBarMouseOut = (event) => {
     this.setState({
-      cursorSVGCoordinate: - Infinity
+      cursorSVGCoordinate: null
     })
   }
 
@@ -468,11 +468,13 @@ export default class Viewer extends React.Component {
                     sequenceLength: this.state.referenceSequenceLength / 3,
                     svgWidth: this.state.fullWidth})}
                   cursorSVGCoordinate={this.state.cursorSVGCoordinate}
-                  height={DEFAULT_SVG_HEIGHT}
-                /> : null
+                  onMarkerBarMouseMove={this._handleMarkerBarMouseMove}
+                  onMarkerBarMouseOut={this._handleMarkerBarMouseOut}
+                  height={DEFAULT_SVG_HEIGHT}>
+                  <Ruler
+                    height={DEFAULT_SVG_HEIGHT}/>
+                </Marker> : null
               }
-              <Ruler
-                height={DEFAULT_SVG_HEIGHT}/>
               <g>
               {
                 React.Children.map(this.props.children, (child) => {
@@ -497,15 +499,6 @@ export default class Viewer extends React.Component {
                 })
               }
               </g>
-              <rect
-                onMouseMove={this._handleMarkerBarMouseMove}
-                onMouseOut={this._handleMarkerBarMouseOut}
-                x={this._getXMin() - this.state.fullWidth}
-                y={0}
-                width={3 * this.state.fullWidth}
-                height={12}
-                opacity={0.1}
-                fill={'#000'}/>
               {
                 /* loading region foreground */
                 <rect

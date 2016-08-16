@@ -35,7 +35,7 @@ export default class Ruler extends React.Component {
     const yOffset = 0;
 
     return (
-      <g>
+      <g className="ruler">
         <g filter="url(#demo2)">
           <rect x={xMin}
             y={yOffset}
