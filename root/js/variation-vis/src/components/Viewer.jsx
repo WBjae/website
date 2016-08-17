@@ -427,7 +427,7 @@ export default class Viewer extends React.Component {
 
 
   _handleMarkerChange = (markerChangeAction) => {
-    const {type, position, markerIndex} = markerChangeAction;
+    const {type, position, index} = markerChangeAction;
     const {markers, activeMarker} = this.state;
     if (type === 'ACTIVE_MARKER_DELETE') {
       this.setState({
@@ -439,6 +439,12 @@ export default class Viewer extends React.Component {
       })
     } else if (type === 'MARKER_ADD') {
       const newMarkers = markers.concat(position);
+      this.setState({
+        markers: newMarkers
+      })
+    } else if (type === 'MARKER_DELETE') {
+      const newMarkers = markers.slice(0, index)
+        .concat(markers.slice(index + 1));
       this.setState({
         markers: newMarkers
       })

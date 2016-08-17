@@ -87,8 +87,10 @@ export default class Marker extends React.Component {
     }).join(' ');
 
     return (
-        <polygon points={pointsString}
-          fill="lime"/>
+        <polygon
+          {...props}
+          points={pointsString}
+          fill="#a64ca6"/>
     )
   }
 
@@ -118,24 +120,32 @@ export default class Marker extends React.Component {
     })
   }
 
-  _handleMarkerDelete = (event) => {}
+  _handleMarkerDelete = (event, index) => {
+    this.props.onMarkerChange({
+      type: 'MARKER_DELETE',
+      index: index
+    })
+  }
 
   render() {
-    const allMarkers = this.props.markerPositions.concat(this.props.activeMarkerPosition);
-    const markerData = allMarkers.map((position) => {
+    const markerData = this.props.markerPositions.map((position) => {
       const coords = this._padSequneceCoordinates(this._cursorSequenceCoordinate(position));
-      const color = '#fd0';
+      const color = '#d8b2d8';
       return {
         ...coords,
         color,
       };
     });
+    const allMarkerData = markerData.concat({
+      color: '#fd0',
+      ...this._padSequneceCoordinates(this._cursorSequenceCoordinate(this.props.activeMarkerPosition))
+    })
 
     return (<g>
       {
         this.props.cursorSVGCoordinate === null ? null : <BasicTrack
           opacity={0.8}
-          data={markerData}
+          data={allMarkerData}
           coordinateMapping={this.props.coordinateMapping}
           y={0}
           height={this.props.height || 600}/>
@@ -160,11 +170,12 @@ export default class Marker extends React.Component {
         })
       }
       {
-        this.props.markerPositions.map((position) => {
+        this.props.markerPositions.map((position, index) => {
           const {start, end} = this._padSequneceCoordinates(this._cursorSequenceCoordinate(position));
           // correct position to place on the center of a residue
           const correctedPosition = this.props.coordinateMapping.toSVGCoordinate((end + start) / 2);
           return this._renderTick({
+            onClick: (event) => this._handleMarkerDelete(event, index),
             position: correctedPosition
           });
         })
