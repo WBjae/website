@@ -67,7 +67,7 @@ export default class Marker extends React.Component {
 
   _renderTick = (props) => {
     const {position} = props;
-    const width = this.context.toWidth(10);
+    const width = this.context.toWidth(16);
     const y = 0;
     const points = [
       {
@@ -75,8 +75,16 @@ export default class Marker extends React.Component {
         y: 0
       },
       {
+        x: position - width / 2,
+        y: 10
+      },
+      {
         x: position,
-        y: 8
+        y: 15
+      },
+      {
+        x: position + width / 2,
+        y: 10
       },
       {
         x: position + width / 2,
