@@ -11,7 +11,8 @@ export default class Marker extends React.Component {
   };
 
   static propTypes = {
-    cursorSVGCoordinate: React.PropTypes.number.isRequired,
+    markerPositions: React.PropTypes.arrayOf(React.PropTypes.number),
+    activeMarkerPosition: React.PropTypes.number,
     onMarkerChange: React.PropTypes.func,
     // sequenceLength: React.PropTypes.number,
     coordinateMapping: React.PropTypes.shape({
@@ -21,9 +22,9 @@ export default class Marker extends React.Component {
     height: React.PropTypes.number
   }
 
-  _cursorSequenceCoordinate() {
-    const {cursorSVGCoordinate, coordinateMapping} = this.props;
-    return Math.floor(coordinateMapping.toSequenceCoordinate(cursorSVGCoordinate));
+  _cursorSequenceCoordinate(position) {
+    const {coordinateMapping} = this.props;
+    return Math.floor(coordinateMapping.toSequenceCoordinate(position));
   }
 
   _padSequneceCoordinates = (startSequenceCoord, endSequenceCoord) => {
@@ -65,27 +66,48 @@ export default class Marker extends React.Component {
 
   _handleMarkerBarMouseMove = (event) => {
     this.props.onMarkerChange({
-      type: 'MARKER_UPDATE',
-      cursorSVGCoordinate: this.context.getEventSVGCoords(event).x
+      type: 'ACTIVE_MARKER_UPDATE',
+      position: this.context.getEventSVGCoords(event).x
     })
   }
 
   _handleMarkerBarMouseOut = (event) => {
     this.props.onMarkerChange({
-      type: 'MARKER_DELETE'
+      type: 'ACTIVE_MARKER_DELETE'
     });
   }
 
+  _handleMarkerBarMouseClick = (event) => {
+    this.props.onMarkerChange({
+      type: 'MARKER_ADD',
+      position: this.context.getEventSVGCoords(event).x
+    })
+  }
+
+  _handleMarkerClick = (event) => {
+    this.props.onMarkerChange({
+      type: 'MARKER_ACTIVATE'
+    })
+  }
+
+  _handleMarkerDelete = (event) => {}
+
   render() {
-    const barCoordinates = this._padSequneceCoordinates(this._cursorSequenceCoordinate())
+    const allMarkers = this.props.markerPositions.concat(this.props.activeMarkerPosition);
+    const markerData = allMarkers.map((position) => {
+      const coords = this._padSequneceCoordinates(this._cursorSequenceCoordinate(position));
+      const color = '#fd0';
+      return {
+        ...coords,
+        color,
+      };
+    });
+
     return (<g>
       {
         this.props.cursorSVGCoordinate === null ? null : <BasicTrack
           opacity={0.8}
-          data={[{
-            ...barCoordinates,
-            color: '#fd0'
-          }]}
+          data={markerData}
           coordinateMapping={this.props.coordinateMapping}
           y={0}
           height={this.props.height || 600}/>
@@ -105,7 +127,8 @@ export default class Marker extends React.Component {
         this._renderBar({
           fill: 'transparent',
           onMouseMove: this._handleMarkerBarMouseMove,
-          onMouseOut: this._handleMarkerBarMouseOut
+          onMouseOut: this._handleMarkerBarMouseOut,
+          onClick: this._handleMarkerBarMouseClick,
         })
       }
       </g>)

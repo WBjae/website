@@ -37,7 +37,8 @@ export default class Viewer extends React.Component {
       // zoomPanEvents: [],
 
       //marker bar
-      cursorSVGCoordinate: null,
+      activeMarker: null,
+      markers: [],
 
      };
   }
@@ -426,14 +427,20 @@ export default class Viewer extends React.Component {
 
 
   _handleMarkerChange = (markerChangeAction) => {
-    const {type, cursorSVGCoordinate} = markerChangeAction;
-    if (type === 'MARKER_DELETE') {
+    const {type, position, markerIndex} = markerChangeAction;
+    const {markers, activeMarker} = this.state;
+    if (type === 'ACTIVE_MARKER_DELETE') {
       this.setState({
-        cursorSVGCoordinate: null
+        activeMarker: null
       })
-    } else if (type === 'MARKER_UPDATE') {
+    } else if (type === 'ACTIVE_MARKER_UPDATE') {
       this.setState({
-        cursorSVGCoordinate: cursorSVGCoordinate
+        activeMarker: position
+      })
+    } else if (type === 'MARKER_ADD') {
+      const newMarkers = markers.concat(position);
+      this.setState({
+        markers: newMarkers
       })
     }
 
@@ -480,7 +487,8 @@ export default class Viewer extends React.Component {
                   coordinateMapping={new CoordinateMappingHelper.DefaultCoordinateMapping({
                     sequenceLength: this.state.referenceSequenceLength / 3,
                     svgWidth: this.state.fullWidth})}
-                  cursorSVGCoordinate={this.state.cursorSVGCoordinate}
+                  activeMarkerPosition={this.state.activeMarker}
+                  markerPositions={this.state.markers}
                   onMarkerChange={this._handleMarkerChange}
                   height={DEFAULT_SVG_HEIGHT}>
                   <Ruler
