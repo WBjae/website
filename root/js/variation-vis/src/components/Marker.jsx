@@ -96,10 +96,12 @@ export default class Marker extends React.Component {
     }).join(' ');
 
     return (
+      <g>
         <polygon
           {...props}
           points={pointsString}
           fill="#a64ca6"/>
+      </g>
     )
   }
 
@@ -117,10 +119,17 @@ export default class Marker extends React.Component {
   }
 
   _handleMarkerBarMouseClick = (event) => {
-    this.props.onMarkerChange({
-      type: 'MARKER_ADD',
-      position: this.context.getEventSVGCoords(event).x
-    })
+    const svgPosition =this.context.getEventSVGCoords(event).x;
+    const hasMarker = this.props.markerPositions.find((dat) => {
+      return this._cursorSequenceCoordinate(dat) ===
+        this._cursorSequenceCoordinate(svgPosition);
+    });
+    if (!hasMarker) {
+      this.props.onMarkerChange({
+        type: 'MARKER_ADD',
+        position: svgPosition
+      })
+    }
   }
 
   _handleMarkerClick = (event) => {

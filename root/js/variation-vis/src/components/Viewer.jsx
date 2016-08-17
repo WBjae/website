@@ -447,7 +447,7 @@ export default class Viewer extends React.Component {
       const newMarkers = markers.concat(position);
       this.setState({
         markers: newMarkers
-      })
+      });
     } else if (type === 'MARKER_DELETE') {
       const newMarkers = markers.slice(0, index)
         .concat(markers.slice(index + 1));
