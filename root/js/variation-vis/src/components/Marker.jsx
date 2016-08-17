@@ -64,6 +64,34 @@ export default class Marker extends React.Component {
     )
   }
 
+  _renderTick = (props) => {
+    const {position} = props;
+    const width = this.context.toWidth(10);
+    const y = 0;
+    const points = [
+      {
+        x: position - width / 2,
+        y: 0
+      },
+      {
+        x: position,
+        y: 8
+      },
+      {
+        x: position + width / 2,
+        y: 0
+      }
+    ];
+    const pointsString = points.map(({x, y}) => {
+      return `${x},${y}`;
+    }).join(' ');
+
+    return (
+        <polygon points={pointsString}
+          fill="lime"/>
+    )
+  }
+
   _handleMarkerBarMouseMove = (event) => {
     this.props.onMarkerChange({
       type: 'ACTIVE_MARKER_UPDATE',
@@ -129,6 +157,16 @@ export default class Marker extends React.Component {
           onMouseMove: this._handleMarkerBarMouseMove,
           onMouseOut: this._handleMarkerBarMouseOut,
           onClick: this._handleMarkerBarMouseClick,
+        })
+      }
+      {
+        this.props.markerPositions.map((position) => {
+          const {start, end} = this._padSequneceCoordinates(this._cursorSequenceCoordinate(position));
+          // correct position to place on the center of a residue
+          const correctedPosition = this.props.coordinateMapping.toSVGCoordinate((end + start) / 2);
+          return this._renderTick({
+            position: correctedPosition
+          });
         })
       }
       </g>)
