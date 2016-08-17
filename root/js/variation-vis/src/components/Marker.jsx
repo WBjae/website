@@ -19,7 +19,8 @@ export default class Marker extends React.Component {
       toSVGCoordinate: React.PropTypes.func,
       toSequenceCoordinate: React.PropTypes.func
     }).isRequired,
-    height: React.PropTypes.number
+    height: React.PropTypes.number,
+    viewHeight: React.PropTypes.number,
   }
 
   _cursorSequenceCoordinate(position) {
@@ -60,7 +61,7 @@ export default class Marker extends React.Component {
         x={this.context.getXMin()}
         y={0}
         width={this.context.getXMax() - this.context.getXMin()}
-        height={12}/>
+        height={this.props.height}/>
     )
   }
 
@@ -148,13 +149,14 @@ export default class Marker extends React.Component {
           data={allMarkerData}
           coordinateMapping={this.props.coordinateMapping}
           y={0}
-          height={this.props.height || 600}/>
+          height={this.props.viewHeight || 600}/>
       }
       {
         // marker bar background
         this._renderBar({
-          opacity: 0.1,
-          fill: '#000'
+          fillOpacity: 0.5,
+          fill: '#406f9c',
+          filter: 'url(#pretty-track-svg-filter)'
         })
       }
       {
@@ -166,7 +168,7 @@ export default class Marker extends React.Component {
           fill: 'transparent',
           onMouseMove: this._handleMarkerBarMouseMove,
           onMouseOut: this._handleMarkerBarMouseOut,
-          onClick: this._handleMarkerBarMouseClick,
+          onClick: this._handleMarkerBarMouseClick
         })
       }
       {

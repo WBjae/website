@@ -10,6 +10,7 @@ import Hammer from 'hammerjs';
 
 const DEFAULT_SVG_INTERNAL_WIDTH = 100;
 const DEFAULT_SVG_HEIGHT = 600;  // use the same vertical coordinate system for internal vs apparent
+const MARKER_BAR_HEIGHT = 12;
 
 export default class Viewer extends React.Component {
 
@@ -260,6 +261,11 @@ export default class Viewer extends React.Component {
           if (ev.type === 'panstart') {
             pannedX = 0
           }
+
+          if (this._getEventSVGCoords(ev.srcEvent).y < MARKER_BAR_HEIGHT) {
+            // avoid pan event on marker bar, which interfere with placing marker
+            return;
+          }
           // Pan only the difference
           const factor = (this.state.fullWidth) / this.state.viewWidth;
           instance.panBy({x: (ev.deltaX - pannedX) * factor, y: false});
@@ -496,13 +502,15 @@ export default class Viewer extends React.Component {
                   activeMarkerPosition={this.state.activeMarker}
                   markerPositions={this.state.markers}
                   onMarkerChange={this._handleMarkerChange}
-                  height={DEFAULT_SVG_HEIGHT}>
+                  height={MARKER_BAR_HEIGHT}
+                  viewHeight={DEFAULT_SVG_HEIGHT}>
                   <Ruler
                     height={DEFAULT_SVG_HEIGHT}/>
                 </Marker> : null
               }
               <g>
               {
+                // render tracks
                 React.Children.map(this.props.children, (child) => {
                   if (child) {
                     const coordinateMapping = child.props.coordinateMapping || (new CoordinateMappingHelper.DefaultCoordinateMapping({
