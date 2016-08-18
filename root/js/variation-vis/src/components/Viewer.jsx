@@ -496,7 +496,7 @@ export default class Viewer extends React.Component {
               }
               {
                 this.state.referenceSequenceLength ? <Marker
-                  coordinateMapping={new CoordinateMappingHelper.DefaultCoordinateMapping({
+                  coordinateMapping={new CoordinateMappingHelper.LinearCoordinateMapping({
                     sequenceLength: this.state.referenceSequenceLength / 3,
                     svgWidth: this.state.fullWidth})}
                   activeMarkerPosition={this.state.activeMarker}
@@ -513,7 +513,7 @@ export default class Viewer extends React.Component {
                 // render tracks
                 React.Children.map(this.props.children, (child) => {
                   if (child) {
-                    const coordinateMapping = child.props.coordinateMapping || (new CoordinateMappingHelper.DefaultCoordinateMapping({
+                    const coordinateMapping = child.props.coordinateMapping || (new CoordinateMappingHelper.LinearCoordinateMapping({
                       sequenceLength: child.props.sequence ? child.props.sequence.length : child.props.sequenceLength,
                       svgWidth: this.state.fullWidth
                     }));

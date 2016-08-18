@@ -6,7 +6,7 @@ import DataSegment from '../components/DataSegment';
 import DataSegmentLabel from '../components/DataSegmentLabel';
 import PrettyTrackSVGFilter from '../components/PrettyTrackSVGFilter';
 import $ from 'jquery';
-import { TRACK_HEIGHT, DataLoader } from '../Utils'
+import { TRACK_HEIGHT, DataLoader, CoordinateMappingHelper } from '../Utils'
 const DEFAULT_MAX_BIN_COUNT = 100;  // default maximum number of bins to show in the visible region
 
 export default class BasicTrack extends React.Component {
@@ -47,7 +47,8 @@ export default class BasicTrack extends React.Component {
   static defaultProps = {
     height: 25,
     data: [],
-    pretty: true
+    pretty: true,
+    coordinateMapping: new CoordinateMappingHelper.ExactCoordinateMapping()
   }
 
   getVerticalPosition = () => {

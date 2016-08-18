@@ -15,7 +15,7 @@ export class AbstractCoordinateMapping {
 
 }
 
-export class DefaultCoordinateMapping extends AbstractCoordinateMapping {
+export class LinearCoordinateMapping extends AbstractCoordinateMapping {
   constructor({sequenceLength, svgWidth}) {
     super();
     this.unitWidth = svgWidth / sequenceLength;
@@ -30,7 +30,23 @@ export class DefaultCoordinateMapping extends AbstractCoordinateMapping {
   }
 }
 
+export class ExactCoordinateMapping extends AbstractCoordinateMapping {
+  constructor() {
+    super();
+  }
+
+  toSVGCoordinate(sequenceCoord) {
+    return sequenceCoord;
+  }
+
+  toSequenceCoordinate(svgCoord) {
+    return svgCoord;
+  }
+}
+
+
 export default {
   AbstractCoordinateMapping,
-  DefaultCoordinateMapping
+  LinearCoordinateMapping,
+  ExactCoordinateMapping,
 }
