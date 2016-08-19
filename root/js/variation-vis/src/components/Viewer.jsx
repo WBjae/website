@@ -4,6 +4,7 @@ import Tooltip from './Tooltip';
 import Ruler from './Ruler';
 import PrettyTrackSVGFilter from './PrettyTrackSVGFilter';
 import Marker from './Marker';
+import MiniMap from './MiniMap';
 import { CoordinateMappingHelper } from '../Utils';
 import svgPanZoom from 'svg-pan-zoom';
 import Hammer from 'hammerjs';
@@ -144,7 +145,15 @@ export default class Viewer extends React.Component {
     return [0, 0, fullWidth, DEFAULT_SVG_HEIGHT].join(' ');
   }
 
-
+  _getDefaultCoordinateMap = () => {
+    if (!this._defaultCoordinateMapping) {
+      this._defaultCoordinateMapping =  new CoordinateMappingHelper.LinearCoordinateMapping({
+        sequenceLength: this.state.referenceSequenceLength / 3,
+        svgWidth: this.state.fullWidth
+      });
+    }
+    return this._defaultCoordinateMapping;
+  }
 
 
   showTooltip = ({title, content, event}) => {
@@ -467,6 +476,14 @@ export default class Viewer extends React.Component {
           width: this.state.viewWidth,
           ...this.props.style
         }}>
+        {
+          this.state.referenceSequenceLength ? <MiniMap
+            xMin={this._getDefaultCoordinateMap().toSequenceCoordinate(this._getXMin())}
+            xMax={this._getDefaultCoordinateMap().toSequenceCoordinate(this._getXMax())}
+            width={this.state.viewWidth}
+            height={10}
+            sequenceLength={this.state.referenceSequenceLength / 3}/> : null
+        }
         <svg id="svg-browser"
           onWheel={this.handlePan}
           viewBox={this.getViewBox()}
@@ -475,6 +492,7 @@ export default class Viewer extends React.Component {
           preserveAspectRatio="none"
           style={{
             border:"1px solid #aaaaaa",
+            marginTop: 5,
             fontFamily: '"Helvetica Neue", Helvetica, Arial, sans-serif',
           }}>
           <svg id="svg-browser-svg"
@@ -496,9 +514,7 @@ export default class Viewer extends React.Component {
               }
               {
                 this.state.referenceSequenceLength ? <Marker
-                  coordinateMapping={new CoordinateMappingHelper.LinearCoordinateMapping({
-                    sequenceLength: this.state.referenceSequenceLength / 3,
-                    svgWidth: this.state.fullWidth})}
+                  coordinateMapping={this._getDefaultCoordinateMap()}
                   activeMarkerPosition={this.state.activeMarker}
                   markerPositions={this.state.markers}
                   onMarkerChange={this._handleMarkerChange}
