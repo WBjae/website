@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import BasicTrack from '../Tracks';
+import { CoordinateMappingHelper } from '../Utils'
 
 export default class MiniMap extends React.Component {
 
@@ -33,6 +34,7 @@ export default class MiniMap extends React.Component {
         height={this.props.height}
         viewBox={this.getViewBox()}>
         <BasicTrack
+          coordinateMapping={new CoordinateMappingHelper.ExactCoordinateMapping()}
           opacity={0.8}
           data={[{
             start: 0,

@@ -48,7 +48,6 @@ export default class BasicTrack extends React.Component {
     height: 25,
     data: [],
     pretty: true,
-    coordinateMapping: new CoordinateMappingHelper.ExactCoordinateMapping()
   }
 
   getVerticalPosition = () => {
