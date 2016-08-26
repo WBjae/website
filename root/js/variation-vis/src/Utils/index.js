@@ -32,8 +32,6 @@ export function capitalize(text){
 
 export function formatSpeciesName(speciesName) {
   const [genus, species, bioproject] = speciesName.split(/\s|_/);
-  console.log(speciesName);
-  console.log(bioproject);
   if (bioproject) {
     const genusString = capitalize(genus.charAt(0));
     return `${genusString}. ${species} (${bioproject})`;

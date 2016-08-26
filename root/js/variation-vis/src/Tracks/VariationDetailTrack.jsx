@@ -9,7 +9,7 @@ import ColorScheme, { COLORS } from '../Utils/ColorHelper';
 const DEFAULT_MAX_BIN_COUNT = 100;  // default maximum number of bins to show in the visible region
 const SUBTRACK_HEIGHT = 30;
 
-export default class VariationTrack extends React.Component {
+export default class VariationDetailTrack extends React.Component {
   static propTypes = {
     ...BasicTrack.propTypes,
     xMin: React.PropTypes.number,

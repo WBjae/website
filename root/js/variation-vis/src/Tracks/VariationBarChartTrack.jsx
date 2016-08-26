@@ -7,8 +7,10 @@ import ColorScheme, { COLORS } from '../Utils/ColorHelper';
 
 const DEFAULT_MAX_BIN_COUNT = 100;  // default maximum number of bins to show in the visible region
 const SUBTRACK_HEIGHT = 30;
+const MAX_BIN_SIZE = 5;  // if more than 10 items are assigned to bin, treat as 10
+const UNIT_HEIGHT = 4;
 
-export default class VariationTrack extends React.Component {
+export default class VariationBarChartTrack extends React.Component {
   static propTypes = {
     ...BasicTrack.propTypes,
     xMin: React.PropTypes.number,
@@ -23,7 +25,7 @@ export default class VariationTrack extends React.Component {
   static getDefaultColorScheme() {
     return getVariationColorScheme();
   }
-  
+
   _bin(variations) {
     const binnedVariations = new DataLoader.BinnedLoader(variations,
       this.props.xMin, this.props.xMax, DEFAULT_MAX_BIN_COUNT);
@@ -44,10 +46,33 @@ export default class VariationTrack extends React.Component {
   }
 
   render() {
-    const data = this._getDataWithIdentifier();
-    const binnedData = this._bin(data);
-
-    return <g>
-      </g>;
+    const binnedData = this._bin(this.props.data);
+    return (<g>
+      {
+        binnedData.map((bin) => {
+          const start = this.props.coordinateMapping.toSVGCoordinate(bin.start);
+          const end = this.props.coordinateMapping.toSVGCoordinate(bin.end);
+          const count = Math.min(bin.data.length, MAX_BIN_SIZE);
+          return (<Bar
+            start={start}
+            end={end}
+            height={count * UNIT_HEIGHT}
+            baseline={this.props.y + MAX_BIN_SIZE * UNIT_HEIGHT}/>)
+        })
+      }
+      </g>)
+      ;
   }
+}
+
+const Bar = (props) => {
+  const {baseline, start, end, height} = props;
+
+  return (<rect
+    x={start}
+    y={baseline - height}
+    width={end - start}
+    height={height}
+    fill="#dd1c77"
+    />);
 }

@@ -1,7 +1,7 @@
 import React from 'react';
 import BasicTrack from './BasicTrack';
 import VariationDetailTrack from './VariationDetailTrack';
-import variationBarChartTrack from './variationBarChartTrack';
+import VariationBarChartTrack from './VariationBarChartTrack';
 import SequenceComponent from '../components/SequenceComponent';
 import { DataLoader } from '../Utils';
 import ColorScheme, { COLORS } from '../Utils/ColorHelper';
@@ -62,7 +62,7 @@ export default class VariationTrack extends React.Component {
 
   render() {
     return this._getUnitWidth() < 10 ?
-      <variationBarChartTrack {...this.props}/>
+      <VariationBarChartTrack {...this.props}/>
       : <VariationDetailTrack {...this.props}/>;
   }
 }
