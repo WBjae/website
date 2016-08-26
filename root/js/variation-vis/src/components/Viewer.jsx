@@ -501,7 +501,9 @@ export default class Viewer extends React.Component {
             >
             <g>
               <defs>
-                <PrettyTrackSVGFilter/>
+                {
+                  <PrettyTrackSVGFilter/>
+                }
               </defs>
               {
                 /* visibile region background */

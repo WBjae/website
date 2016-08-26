@@ -12,7 +12,8 @@ const DEFAULT_MAX_BIN_COUNT = 100;  // default maximum number of bins to show in
 export default class BasicTrack extends React.Component {
 
   static propTypes = {
-    index: React.PropTypes.number, //.isRequired,
+//    index: React.PropTypes.number, //.isRequired,
+    id: React.PropTypes.string.isRequired,    // stable identifier of track
     data: React.PropTypes.arrayOf(React.PropTypes.shape({
       start: React.PropTypes.number,
       end: React.PropTypes.number,

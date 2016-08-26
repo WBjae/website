@@ -290,11 +290,13 @@ class App extends React.Component {
     }
   }
 
-  handleTrackHeightChange = (trackId, newHeight) => {
-    this._setTrackState({
-      id: trackId,
-      outerHeight: newHeight
-    });
+  getTrackHeightChangeHandler = (trackId) => {
+    return (newHeight) => {
+      this._setTrackState({
+        id: trackId,
+        outerHeight: newHeight
+      });
+    };
   }
 
   getTrackDescriptionRequestHandler = (trackIndex) => {
@@ -481,7 +483,7 @@ class App extends React.Component {
                   ignoreShortSegments={trackData.ignoreShortSegments}
                   colorScheme={this._getTrackColorScheme(trackData)}
                   outerHeight={trackData.outerHeight}
-                  onHeightChange={this.handleTrackHeightChange}
+                  onHeightChange={this.getTrackHeightChangeHandler(trackData.id)}
                   y={this._getTrackYPosition(index)}/> : null;
               })
             }
