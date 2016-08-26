@@ -299,15 +299,15 @@ class App extends React.Component {
     };
   }
 
-  getTrackDescriptionRequestHandler = (trackIndex) => {
+  getTrackDescriptionRequestHandler = (trackId) => {
     return () => {
       this.setState({
-        activeTrackModal: trackIndex
+        activeTrackModal: trackId
       });
     }
   }
 
-  getTrackDescriptionCancelHandler = (trackIndex) => {
+  getTrackDescriptionCancelHandler = (trackId) => {
     return () => {
       this.setState({
         activeTrackModal: null
@@ -353,20 +353,23 @@ class App extends React.Component {
         index={index}
         y={this._getTrackYPosition(index, 40)}
         {...trackData}
-        onTrackDescriptionRequest={this.getTrackDescriptionRequestHandler(index)}/>
+        onTrackDescriptionRequest={this.getTrackDescriptionRequestHandler(trackData.id)}/>
     });
   }
 
   renderTrackModal() {
-    const trackIndex = this.state.activeTrackModal;
-    if (trackIndex || trackIndex === 0) {
+    const trackIndex = this.state.tracks.findIndex((trackData) => {
+      return trackData.id === this.state.activeTrackModal;
+    });
+
+    if (trackIndex > -1) {
       const trackData = this.state.tracks[trackIndex];
       const {name} = trackData;
       const colorScheme = this._getTrackColorScheme(trackData);
       return <TrackLegendModal
           name={name}
           colorScheme={colorScheme}
-          onTrackDescriptionCancel={this.getTrackDescriptionCancelHandler(trackIndex)}/>;
+          onTrackDescriptionCancel={this.getTrackDescriptionCancelHandler(trackData.id)}/>;
     } else {
       return null
     }
