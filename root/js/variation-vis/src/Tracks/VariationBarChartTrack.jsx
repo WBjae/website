@@ -38,7 +38,43 @@ export default class VariationBarChartTrack extends React.Component {
     return binnedVariations;
   }
 
-  _renderTooltip(variationDat) {
+  _renderTooltip(binDat) {
+    const {start, end, data} = binDat;
+    return (
+      <div>
+        <h6>
+        {
+          `${data.length} variation(s) found in ${start}-${end}`
+        }
+        </h6>
+        <ul>
+        {
+          data.map((variationDat) => {
+            const {substitution, phenotypes} = variationDat;
+            const changeDetail = substitution.before + substitution.aa_position + substitution.after;
+            const phenotypeCountText = variationDat.phen_count ? `(${variationDat.phen_count} phenotypes)` : '';
+            return (
+              <li>
+                {
+                  (variationDat.molecular_change || '') + ' ' + changeDetail
+                }
+                <br/>
+                <strong>
+                {
+                  phenotypeCountText
+                }
+                </strong>
+              </li>)
+          })
+        }
+        </ul>
+      </div>);
+
+    return (<VariationSummary
+      changeType={variationDat.molecular_change}
+      changeDetail={changeDetail}
+      phenotypes={phenotypes ? phenotypes.map((phenotype) => phenotype.phenotype.label) : []}
+      phenotypeCount={variationDat.phen_count}/>);
   }
 
   _getColorScheme() {
@@ -46,7 +82,12 @@ export default class VariationBarChartTrack extends React.Component {
   }
 
   render() {
-    const binnedData = this._bin(this.props.data);
+    const binnedData = this._bin(this.props.data).map((binDat) => {
+      return {
+        ...binDat,
+        tip: this._renderTooltip(binDat)
+      }
+    });
     return (<g>
       {
         binnedData.map((bin) => {
@@ -54,7 +95,7 @@ export default class VariationBarChartTrack extends React.Component {
           const end = this.props.coordinateMapping.toSVGCoordinate(bin.end);
           const count = Math.min(bin.data.length, MAX_BIN_SIZE);
           return (<Bar
-            onMouseEnter={(event) => this.props.onTooltipShow ? this.props.onTooltipShow({title: 'aaa', content: <div>azzzaa</div>, event: event}) : null}
+            onMouseEnter={(event) => this.props.onTooltipShow ? this.props.onTooltipShow({title: `${bin.data.length} variation(s)`, content: bin.tip, event: event}) : null}
             onMouseLeave={this.props.onTooltipHide}
             start={start}
             end={end}
