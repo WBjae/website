@@ -54,8 +54,11 @@ export default class VariationBarChartTrack extends React.Component {
           const end = this.props.coordinateMapping.toSVGCoordinate(bin.end);
           const count = Math.min(bin.data.length, MAX_BIN_SIZE);
           return (<Bar
+            onMouseEnter={(event) => this.props.onTooltipShow ? this.props.onTooltipShow({title: 'aaa', content: <div>azzzaa</div>, event: event}) : null}
+            onMouseLeave={this.props.onTooltipHide}
             start={start}
             end={end}
+            key={`bar-${start}-${end}`}
             height={count * UNIT_HEIGHT}
             baseline={this.props.y + MAX_BIN_SIZE * UNIT_HEIGHT}/>)
         })
@@ -69,6 +72,7 @@ const Bar = (props) => {
   const {baseline, start, end, height} = props;
 
   return (<rect
+    {...props}
     x={start}
     y={baseline - height}
     width={end - start}

@@ -118,7 +118,12 @@ export default class Tooltip extends React.Component {
             width: 180,
             maxHeight: 120,
             overflow: 'hidden'}}
-            dangerouslySetInnerHTML={{__html: this.props.content}} />
+            //dangerouslySetInnerHTML={{__html: this.props.content}}
+            >
+            {
+              this.props.content
+            }
+          </div>
         </Popover>
         : null;
   }

@@ -2,6 +2,7 @@ import React from 'react';
 import BasicTrack from './BasicTrack';
 import { getVariationColorScheme } from './VariationTrack';
 import SequenceComponent from '../components/SequenceComponent';
+import VariationSummary from '../components/VariationSummary';
 import FlexHeightTrackWrapper from '../components/FlexHeightTrackWrapper';
 import { DataLoader } from '../Utils';
 import ColorScheme, { COLORS } from '../Utils/ColorHelper';
@@ -107,18 +108,14 @@ export default class VariationDetailTrack extends React.Component {
   }
 
   _renderTooltip(variationDat) {
-    const {composite_change, molecular_change} = variationDat;
+    const {substitution, phenotypes} = variationDat;
+    const changeDetail = substitution.before + substitution.aa_position + substitution.after;
 
-    const phenotypeText = variationDat.phen_count ? variationDat.phenotypes ?
-      '<br/><strong>Phenotypes:</strong><br/>' +
-      variationDat.phenotypes.map((p) => {
-        return `- ${p.phenotype.label}`;
-      }).join('<br/>') : '<br/>Loading phenotypes...' : '';
-
-    const compositeChangeText = ' (' + variationDat.substitution.before + variationDat.substitution.aa_position + variationDat.substitution.after + ')';
-    return (molecular_change || 'Substitution') +
-      compositeChangeText +
-      phenotypeText;
+    return (<VariationSummary
+      changeType={variationDat.molecular_change}
+      changeDetail={changeDetail}
+      phenotypes={phenotypes ? phenotypes.map((phenotype) => phenotype.phenotype.label) : []}
+      phenotypeCount={variationDat.phen_count}/>);
   }
 
   _getColorScheme() {
