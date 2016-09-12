@@ -91,8 +91,8 @@ module.exports = {
     proxy: {
       '/api/*': {
         target: 'http://amigo-dev-golr.berkeleybop.org',
-        rewrite: function(req) {
-          req.url = req.url.replace(/^\/api/, '');
+        pathRewrite: {
+          '^/api': ''
         },
         // toProxy: true,
         // autoRewrite: true,
