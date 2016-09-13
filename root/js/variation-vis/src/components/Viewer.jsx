@@ -1,5 +1,6 @@
 import "babel-polyfill";
 import React from 'react';
+import Zoomable from './Zoomable';
 import Tooltip from './Tooltip';
 import Ruler from './Ruler';
 import PrettyTrackSVGFilter from './PrettyTrackSVGFilter';
@@ -21,22 +22,15 @@ export default class Viewer extends React.Component {
       //lastMoveTime: Number.NEGATIVE_INFINITY,
 
       // zoomPan scale and position
-      zoomPan: null,
-      zoomFactor: 1,
-      xMin: 0,  // visible region of svg by internal eate
-      xMax: DEFAULT_SVG_INTERNAL_WIDTH,
+      scale: 1,
+      translate: 0,
+      isZoomPanOccuring: false,
       fullWidth: DEFAULT_SVG_INTERNAL_WIDTH,
       viewWidth: 500,
 
       // tooltips
       tooltip: null,
       tooltipEventID: 0,
-
-      // zoomPan
-      isZoomPanOccuring: false,
-      zoomPanEventId: 0,
-      zoomPanCallId: 0,  // avoid too many render by
-      // zoomPanEvents: [],
 
       //marker bar
       activeMarker: null,
@@ -59,7 +53,7 @@ export default class Viewer extends React.Component {
 
   getChildContext() {
     return {
-      zoomFactor: this.state.zoomFactor,
+      zoomFactor: this.state.scale,
       viewWidth: this.state.viewWidth,
       getXMin: this._getXMin,
       getXMax: this._getXMax,
@@ -71,73 +65,20 @@ export default class Viewer extends React.Component {
   }
 
   getZoomHandler = (rawMultiple) => {
-    return (event) => {
-      if (this.state.zoomPan){
-        // const xMin = this._getXMin();
-        // const xMax = this._getXMax();
-     //    const xCentre = xMin + (xMax - xMin) / 2;
-     //    const previousViewPortWidth = this.state.fullWidth / this.state.zoomFactor;
-     //    const offset = previousViewPortWidth * (1 - multiple) / 2;
-     // //   this.state.zoomPan.zoomBy(multiple);
-
-        const {xMin, xMax, viewPortCenter, imageCenter, zoomFactor, viewPortWidth} = this._getViewPortStat();
-
-        let newZoomFactor = zoomFactor * rawMultiple;
-        newZoomFactor = Math.min(newZoomFactor, this._getMaxZoomFactor());
-        newZoomFactor = Math.max(newZoomFactor, this._getMinZoomFactor());
-        const multiple = newZoomFactor / zoomFactor;
-
-        const newXMin = viewPortCenter - ((viewPortWidth / multiple) / 2);
-        const newPanOffset = newXMin * newZoomFactor * -1;
-        this.state.zoomPan.zoom(newZoomFactor);
-        this.state.zoomPan.pan({
-          x: newPanOffset,
-          y: 0
-        })
-
-        // const deltaWidth = this.state.fullWidth * (1 - newZoomFactor);
-        // const centerOffset = viewPortCenter
-        // this.state.zoomPan.zoom(newZoomFactor);
-        // this.state.zoomPan.pan({
-        //   x: deltaWidth / 2 + centerOffset,
-        //   y: 0
-        // })
-      }
-    }
-
-  }
-
-  _getViewPortStat(){
-    const xMin = this._getXMin();
-    const xMax = this._getXMax();
-    const {zoomFactor} = this.state;
-    const viewPortWidth = xMax - xMin;
-    const viewPortCenter = xMin + viewPortWidth / 2;
-    const imageCenter = (this.state.fullWidth / 2);
-    const centerOffset = viewPortCenter - imageCenter;
-    return {xMin, xMax, viewPortCenter, imageCenter, zoomFactor, viewPortWidth};
   }
 
   getPanHandler = (deltaRatio) => {
-    return () => {
-      if (this.state.zoomPan){
-        const delta = this.state.fullWidth * deltaRatio;
-        this.state.zoomPan.panBy({x: delta, y: 0});
-      }
-    }
   }
 
   handleZoomPanReset = () => {
-    const zoomPan = this.state.zoomPan;
-    if (zoomPan){
-      const zoom = 0.95;  // add a padding to default view by zooming out
-      const deltaWidth = this.state.fullWidth * (1 - zoom);
-      zoomPan.zoom(zoom);
-      zoomPan.pan({
-        x: deltaWidth/2,  // re-center after zooming
-        y: 0
-      })
-    }
+  }
+
+  _handleTransform = (transform) => {
+    const {translateX, scaleX} = transform;
+    this.setState({
+      translate: translateX,
+      scale: scaleX
+    });
   }
 
   getViewBox = () => {
@@ -246,150 +187,22 @@ export default class Viewer extends React.Component {
       unitLength: unitLength,
       fullWidth: referenceSequenceLength * unitLength,
       referenceSequenceLength
-    }, this._setupZoomPan);
-  }
-
-
-  _setupZoomPan = () => {
-
-    const eventsHandler = {
-      // haltEventListeners: ['touchstart', 'touchend', 'touchmove', 'touchleave', 'touchcancel',
-      //   'mousedown', 'mousemove', 'mouseup'],
-      init: (options) => {
-        var instance = options.instance
-          , initialScale = 1
-          , pannedX = 0
-          , pannedY = 0;
-
-        // Init Hammer
-        this.hammer = new Hammer(options.eventsListenerElement)
-
-        // Handle pan
-        this.hammer.on('panstart panmove', (ev) => {
-          // On pan start reset panned variables
-          if (ev.type === 'panstart') {
-            pannedX = 0
-          }
-
-          if (this._getEventSVGCoords(ev.srcEvent).y < MARKER_BAR_HEIGHT) {
-            // avoid pan event on marker bar, which interfere with placing marker
-            return;
-          }
-          // Pan only the difference
-          const factor = (this.state.fullWidth) / this.state.viewWidth;
-          instance.panBy({x: (ev.deltaX - pannedX) * factor, y: false});
-          pannedX = ev.deltaX;
-
-        })
-
-        // Prevent moving the page on some devices when panning over SVG
-        options.svgElement.addEventListener('touchmove', function(e){ e.preventDefault(); });
-      },
-      destroy: () => {
-        this.hammer.destroy()
-      }
-    };
-
-    const svgElement = svgPanZoom('#svg-browser-svg', {
-    //  viewportSelector: '.svg-pan-zoom_viewport'
-    panEnabled: false,  // disable default event handling for panning. Panning is handled by custom event handler.
-    separateZoomsEnabled: true,
-    beforeZoom: (zooms) => {
-      if (this.state.zoomLockOn) {
-        return false;
-      }
-      return {x: true, y: false};
-    },
-    beforePan: () => {
-      return {x: true, y: false};
-    },
-    onZoom: () => {
-      this.hideTooltip();
-      this._updateZoomPanState();
-      this._zoomPanTimeout();
-    },
-    onPan: () => {
-      this.hideTooltip();
-      this._updateZoomPanState();
-      this._zoomPanTimeout()
-    }
-    // , controlIconsEnabled: true
-    //, zoomEnabled: false
-    // , dblClickZoomEnabled: true
-    , mouseWheelZoomEnabled: true
-    // , preventMouseEventsDefault: true
-    , zoomScaleSensitivity: 0.4
-    , minZoom: this._getMinZoomFactor()
-    , maxZoom: this._getMaxZoomFactor()
-    , fit: false
-    , contain: false
-    , center: false,
-    customEventsHandler: eventsHandler,
-    // , refreshRate: 'auto'
-    // , beforeZoom: function(){}
-    // , onZoom: function(){}
-    // , beforePan: function(){}
-    // , onPan: function(){}
-    eventsListenerElement: document.querySelector('#svg-browser')
     });
-    $('#svg-browser-svg').css({
-     width: '100%',
-   // height:'100%'
-    })
-    //svgElement
-    //svgElement.resize()
-//svgElement.setAttribute('width', 500)
-
-    this.setState({
-      zoomPan: svgElement
-    }, () => {
-      this.handleZoomPanReset();
-    });
-
-    //this.svgElement = svgElement;
-
-  }
-
-  _updateZoomPanState = () => {
-
-    const {x: zoomFactor} = this.state.zoomPan.getZooms();
-    const {x: panOffset} = this.state.zoomPan.getPan();
-    const xMin = panOffset * -1 / zoomFactor;
-    const zoomPanCallId = this.state.zoomPanCallId + 1;
-    // const newZoomPanEvents = this.state.zoomPanEvents.concat({
-    //   zoomFactor,
-    //   panOffset,
-    //   zoomPanCallId,
-    // });
-
-    this.setState({
-      zoomPanCallId
-    });
-
-    setTimeout(() => {
-      if (this.state.zoomPanCallId === zoomPanCallId) {
-        // if no new zoomPan events occur during the timeout
-        this.setState((prevState) => {
-          return {
-            xMin: xMin,
-            zoomFactor: zoomFactor
-          };
-        });
-      }
-    }, 400);
   }
 
   _getXMin = () => {
-    return this.state.xMin;
+    const {translate, scale, fullWidth} = this.state;
+    return translate * -1 / scale;
   }
 
   _getXMax = () => {
-    return this.state.xMin + this.state.fullWidth / this.state.zoomFactor;
+    const {translate, scale, fullWidth} = this.state;
+    return (translate * -1 / scale) + (fullWidth / scale);
   }
 
   // convert apparent width to with used by SVG internally
   _toWidth = (apparentWidth) => {
-    const apparentFullWidth = this.state.viewWidth * this.state.zoomFactor;
+    const apparentFullWidth = this.state.viewWidth * this.state.scale;
     return apparentWidth * this.state.fullWidth / apparentFullWidth;
   }
 
@@ -397,7 +210,7 @@ export default class Viewer extends React.Component {
     const containerRect = this._viewerContainer.getBoundingClientRect();
     const offsetX = event.clientX - containerRect.left;
     const offsetY = event.clientY - containerRect.top;
-    const svgOffsetX = offsetX * this.state.fullWidth / (this.state.zoomFactor * this.state.viewWidth);
+    const svgOffsetX = offsetX * this.state.fullWidth / (this.state.scale * this.state.viewWidth);
     return {
       x: svgOffsetX + this._getXMin(),
       y: offsetY
@@ -408,38 +221,6 @@ export default class Viewer extends React.Component {
   _toReferenceUnit = (width) => {
     return width / this.state.unitLength;
   }
-
-  _getMaxZoomFactor() {
-    return this.state.fullWidth / this.state.viewWidth * 2;
-  }
-
-  _getMinZoomFactor() {
-    return 0.9;
-  }
-
-  _zoomPanTimeout = () => {
-    let zoomPanEventId;
-    this.setState((prevState) => {
-      zoomPanEventId = prevState.zoomPanEventId + 1;
-      return {
-        isZoomPanOccuring: true,
-        zoomPanEventId: zoomPanEventId
-      };
-    });
-    setTimeout(()=> {
-      this.setState((prevState) => {
-        if (prevState.zoomPanEventId === zoomPanEventId){
-          // only cancel isZoomPanOccuring if no zoompan request is made
-          return {
-            isZoomPanOccuring: false
-          };
-        }else{
-          return {};
-        }
-      });
-    }, 200);
-  }
-
 
   _handleMarkerChange = (markerChangeAction) => {
     const {type, position, index} = markerChangeAction;
@@ -495,11 +276,10 @@ export default class Viewer extends React.Component {
             marginTop: 5,
             fontFamily: '"Helvetica Neue", Helvetica, Arial, sans-serif',
           }}>
-          <svg id="svg-browser-svg"
-            x={0} y={0}
-            //preserveAspectRatio="meet xMinYMin"
-            >
-            <g>
+            <Zoomable
+              onTransform={this._handleTransform}
+              scaleX={this.state.scale}
+              translateX={this.state.translate}>
               <defs>
                 {
                   <PrettyTrackSVGFilter/>
@@ -571,8 +351,7 @@ export default class Viewer extends React.Component {
                   opacity={0.7}
                   fill={'#cccccc'}/>
               }
-            </g>
-          </svg>
+            </Zoomable>
         </svg>
         { this.state.tooltip
           ? <Tooltip {...this.state.tooltip}/>
