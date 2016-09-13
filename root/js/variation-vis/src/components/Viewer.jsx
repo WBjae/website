@@ -65,6 +65,10 @@ export default class Viewer extends React.Component {
   }
 
   getZoomHandler = (rawMultiple) => {
+    return () => {
+      const center = (this._getXMin() + this._getXMax()) / 2;
+      this._zoomable.scaleBy(rawMultiple, center);
+    }
   }
 
   getPanHandler = (deltaRatio) => {
@@ -278,8 +282,8 @@ export default class Viewer extends React.Component {
           }}>
             <Zoomable
               onTransform={this._handleTransform}
-              scaleX={this.state.scale}
-              translateX={this.state.translate}>
+              extentX={[0, this.state.fullWidth]}
+              ref={(c) => this._zoomable = c}>
               <defs>
                 {
                   <PrettyTrackSVGFilter/>
