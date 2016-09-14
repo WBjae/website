@@ -72,9 +72,14 @@ export default class Viewer extends React.Component {
   }
 
   getPanHandler = (deltaRatio) => {
+    return () => {
+      const delta = (this._getXMax() - this._getXMin()) * deltaRatio;
+      this._zoomable.translateBy(delta);
+    }
   }
 
   handleZoomPanReset = () => {
+    this._zoomable.reset();
   }
 
   _handleTransform = (transform) => {

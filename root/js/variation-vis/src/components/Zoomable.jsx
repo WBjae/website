@@ -19,18 +19,27 @@ export default class Zoomable extends Component {
   }
 
 
-  scaleBy(kMultiple, center=0) {
+  scaleBy(kMultiple, center) {
     const kCurrent = this.transform.scaleX;
-    const k = kMultiple * kCurrent;
+    this.scaleTo(kMultiple * kCurrent, center);
+  }
+
+  scaleTo(k, center) {
     // transform point x such that it occupies centerPosition
     // k * x + t = centerPosition
     const t = this._getCenterPosition() - (k * center);
     const node = ReactDOM.findDOMNode(this);
     select(node).call(this._zoom.transform, zoomIdentity.translate(t, 0).scale(k));
-    this.transform = {
-      translateX: t,
-      scaleX: k
-    };
+  }
+
+  reset() {
+    console.log([0.9, this._getCenterPosition()]);
+    this.scaleTo(0.9, this._getCenterPosition());
+  }
+
+  translateBy(t) {
+    const node = ReactDOM.findDOMNode(this);
+    this._zoom.translateBy(select(node), t);
   }
 
   _getCenterPosition() {
@@ -38,21 +47,13 @@ export default class Zoomable extends Component {
     return (startX + endX) / 2;
   }
 
-  translateBy(t) {
-    const node = ReactDOM.findDOMNode(this);
-    this._zoom.translateBy(select(node), t);
-    console.log(zoomTransform(node).apply([1,0]));
-  }
-
-  componentDidMount() {
+  _setup() {
     // setup event listeners
     const node = ReactDOM.findDOMNode(this);
     this._zoom = zoom()
 //      .scaleExtent([1 / 2, 4])
-      .on("zoom", (zoomed) => {
-        console.log(zoomed)
+      .on("zoom", () => {
         const v = select(this._zoomArea);
-        v.attr("transform", event.transform);
         const transform = event.transform;
         v.attr("transform",  `translate(${transform.x}, 0) scale(${transform.k}, 1)`);
         this.transform = {
@@ -85,6 +86,20 @@ export default class Zoomable extends Component {
       }
     }, 300);
 
+    this.reset();
+
+  }
+
+  _teardown() {
+    // clean up event listeners
+    select(node).on(".zoom", null);  // listener uses name ".zoom", note the "."
+    // clean up intervals
+    clearInterval(this._timerId);
+    this._timerId = null;
+  }
+
+  componentDidMount() {
+    this._setup();
   }
 
   componentWillReceiveProps() {
@@ -95,11 +110,7 @@ export default class Zoomable extends Component {
   }
 
   componentWillUnmount() {
-    // clean up event listeners
-    select(node).on(".zoom", null);  // listener uses name ".zoom", note the "."
-    // clean up intervals
-    clearInterval(this._timerId);
-    this._timerId = null;
+    this._teardown();
   }
 
   _parseTransform(transformString='') {
