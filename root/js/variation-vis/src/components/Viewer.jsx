@@ -1,5 +1,6 @@
 import "babel-polyfill";
 import React from 'react';
+import ReactDOM from 'react-dom';
 import Zoomable from './Zoomable';
 import Tooltip from './Tooltip';
 import Ruler from './Ruler';
@@ -88,6 +89,24 @@ export default class Viewer extends React.Component {
       translate: translateX,
       scale: scaleX
     });
+  }
+
+
+  _updateDimensions = () => {
+    const viewWidth = ReactDOM.findDOMNode(this).offsetWidth;
+    console.log(viewWidth);
+    this.setState({
+      viewWidth: viewWidth,
+    });
+  }
+
+  componentDidMount() {
+    this._updateDimensions();
+    window.addEventListener("resize", this._updateDimensions);
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener("resize", this.updateDimensions);
   }
 
   getViewBox = () => {
@@ -263,14 +282,14 @@ export default class Viewer extends React.Component {
       <div ref={(component) => this._viewerContainer = component}
         style={{
           position: 'relative',
-          width: this.state.viewWidth,
+          width: 'auto',
           ...this.props.style
         }}>
         {
           this.state.referenceSequenceLength ? <MiniMap
             xMin={this._getDefaultCoordinateMap().toSequenceCoordinate(this._getXMin())}
             xMax={this._getDefaultCoordinateMap().toSequenceCoordinate(this._getXMax())}
-            width={this.state.viewWidth}
+            width="100%"
             height={10}
             sequenceLength={this.state.referenceSequenceLength / 3}/> : null
         }
@@ -278,7 +297,7 @@ export default class Viewer extends React.Component {
           onWheel={this.handlePan}
           viewBox={this.getViewBox()}
           height="100%"
-          width={this.state.viewWidth}
+          width="100%"
           preserveAspectRatio="none"
           style={{
             border:"1px solid #aaaaaa",

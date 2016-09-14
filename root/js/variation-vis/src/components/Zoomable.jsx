@@ -33,7 +33,6 @@ export default class Zoomable extends Component {
   }
 
   reset() {
-    console.log([0.9, this._getCenterPosition()]);
     this.scaleTo(0.9, this._getCenterPosition());
   }
 
