@@ -38,8 +38,10 @@ export default class VariationDetailTrack extends React.Component {
   }
 
   _bin(variations) {
+    // make bin width 1
+    const binCount = this.props.xMax - this.props.xMin;
     const binnedVariations = new DataLoader.BinnedLoader(variations,
-      this.props.xMin, this.props.xMax, DEFAULT_MAX_BIN_COUNT);
+      this.props.xMin, this.props.xMax, Math.max(binCount, 1));
     // const binnedData = binnedVariations.map((bin) => {
     //   return {
     //     ...bin,
