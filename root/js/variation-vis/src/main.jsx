@@ -436,7 +436,9 @@ class App extends React.Component {
       // overflowX: 'scroll',
       // //padding: '0 5',
       // width: 400
-      width: this.state.viewWidth + trackLabelColumnWidth,
+      //width: this.state.viewWidth + trackLabelColumnWidth,
+      margin: 10,
+      width: 'auto',
       height: DEFAULT_SVG_HEIGHT,
       // border:"1px solid black",
       position: "relative"
@@ -455,6 +457,8 @@ class App extends React.Component {
           <div className="track-label-column"
             style={{
               width: trackLabelColumnWidth,
+              minHeight: 1,
+              float: 'left',
               position: 'relative'
             }}>
             {
@@ -467,7 +471,9 @@ class App extends React.Component {
 
           <Viewer ref={(component) => this._viewerComponent = component}
             style={{
-              left: trackLabelColumnWidth
+              //left: trackLabelColumnWidth,
+              overflow: 'hidden',
+              width: 'auto',
             }}>
             {
               tracks.map((trackData, index) => {
