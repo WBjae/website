@@ -325,6 +325,7 @@ export default class Viewer extends React.Component {
               }
               {
                 this.state.referenceSequenceLength ? <Marker
+                  ref={(c) => this._markerComponent = c}
                   coordinateMapping={this._getDefaultCoordinateMap()}
                   activeMarkerPosition={this.state.activeMarker}
                   markerPositions={this.state.markers}
