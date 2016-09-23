@@ -154,10 +154,11 @@ export default class Marker extends React.Component {
         color,
       };
     });
-    const allMarkerData = markerData.concat({
+    const allMarkerData = this.props.activeMarkerPosition === null ? markerData : markerData.concat({
       color: '#fd0',
+      className: 'marker-active',
       ...this._padSequneceCoordinates(this._cursorSequenceCoordinate(this.props.activeMarkerPosition))
-    })
+    });
 
     return (<g>
       {

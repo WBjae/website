@@ -11,6 +11,7 @@ export default class Button extends React.Component {
     width: React.PropTypes.number,
     height: React.PropTypes.number,
     link: React.PropTypes.string,
+    className: React.PropTypes.string,    
   }
 
   _getDimension() {
@@ -42,6 +43,7 @@ export default class Button extends React.Component {
     return (
       <rect style={{...this._getCursorStyle()}}
         onClick={this.handleClick}
+        className={this.props.className}
         {...this._getDimension()}/>
     );
   }

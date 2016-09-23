@@ -91,6 +91,7 @@ export default class BasicTrack extends React.Component {
               <DataSegment
                 {...getSegmentCoords(dat)}
                 key={`data-rect-${index}`}
+                className={dat.className}
                 onMouseEnter={(event) => this.props.onTooltipShow ? this.props.onTooltipShow({title: dat.name, content: dat.tip, event: event}) : null}
                 onMouseLeave={this.props.onTooltipHide}
                 link={dat.link}
