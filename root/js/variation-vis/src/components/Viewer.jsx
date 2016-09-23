@@ -303,8 +303,9 @@ export default class Viewer extends React.Component {
             border:"1px solid #aaaaaa",
             marginTop: 5,
             fontFamily: '"Helvetica Neue", Helvetica, Arial, sans-serif',
+            background: 'white url(/img/ajax-loader.gif) center no-repeat',
           }}>
-            <Zoomable
+          {this.state.referenceSequenceLength ? <Zoomable
               onTransform={this._handleTransform}
               extentX={[0, this.state.fullWidth]}
               ref={(c) => this._zoomable = c}>
@@ -379,7 +380,7 @@ export default class Viewer extends React.Component {
                   opacity={0.7}
                   fill={'#cccccc'}/>
               }
-            </Zoomable>
+            </Zoomable> : null}
         </svg>
         { this.state.tooltip
           ? <Tooltip {...this.state.tooltip}/>
