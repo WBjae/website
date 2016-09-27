@@ -29,6 +29,7 @@ export default class BasicTrack extends React.Component {
     }),
     xMin: React.PropTypes.number,
     xMax: React.PropTypes.number,
+    activeMarker: React.PropTypes.number,
 //    viewWidth: React.PropTypes.number,
     onTooltipShow: React.PropTypes.func,
     onTooltipHide: React.PropTypes.func,
@@ -74,11 +75,15 @@ export default class BasicTrack extends React.Component {
 
     const getSegmentCoords = (segment) => {
       const graphicPosition = this.getHorizontalPosition(segment);
+      const isMarkerHover = segment.start <= this.props.activeMarker &&
+        segment.end > this.props.activeMarker;
+
       return {
         x: graphicPosition.start,
         y: this.getVerticalPosition(),
         width: graphicPosition.end - graphicPosition.start,
-        height: this.props.height
+        height: this.props.height,
+        tooltipOn: isMarkerHover,
       };
     }
 
@@ -91,9 +96,11 @@ export default class BasicTrack extends React.Component {
               <DataSegment
                 {...getSegmentCoords(dat)}
                 key={`data-rect-${index}`}
+                onTooltipShow={this.props.onTooltipShow}
+                onTooltipHide={this.props.onTooltipHide}
                 className={dat.className}
-                onMouseEnter={(event) => this.props.onTooltipShow ? this.props.onTooltipShow({title: dat.name, content: dat.tip, event: event}) : null}
-                onMouseLeave={this.props.onTooltipHide}
+                title={dat.name}
+                content={dat.tip}
                 link={dat.link}
                 fill={dat.color || 'grey'}
                 fillOpacity={(dat.fillOpacity || dat.fillOpacity === 0) ? dat.fillOpacity : 1}/>

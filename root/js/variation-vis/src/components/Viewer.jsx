@@ -125,7 +125,7 @@ export default class Viewer extends React.Component {
   }
 
 
-  showTooltip = ({title, content, event}) => {
+  showTooltip = ({title, content, target}) => {
 
     // // Get point in global SVG space
     // function cursorPoint(evt){
@@ -143,8 +143,8 @@ export default class Viewer extends React.Component {
 
     // const {x, y} = cursorPoint(event);
 
-    const containerBox = this._viewerContainer.getBoundingClientRect();
-    const targetBox = event.target.getBoundingClientRect();
+    const containerBox = ReactDOM.findDOMNode(this).getBoundingClientRect();
+    const targetBox = target.getBoundingClientRect();
 
     // console.log('called');
     // const x = targetBox.left - containerBox.left;
@@ -347,9 +347,11 @@ export default class Viewer extends React.Component {
                     }));
                     const xMin = coordinateMapping.toSequenceCoordinate(this._getXMin());
                     const xMax = coordinateMapping.toSequenceCoordinate(this._getXMax());
+                    const activeMarker = coordinateMapping.toSequenceCoordinate(this.state.activeMarker);
                     const newChild = React.cloneElement(child, {
                       xMin: Math.floor(xMin),
                       xMax: Math.ceil(xMax),
+                      activeMarker: activeMarker,
                       coordinateMapping: coordinateMapping,
                       onTooltipShow: this.showTooltip,
                       onTooltipHide: this.hideTooltip,
