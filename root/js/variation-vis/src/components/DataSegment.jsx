@@ -28,7 +28,10 @@ export default class Button extends React.Component {
   }
 
   _handleTooltipHide = (target) => {
-    this.props.onTooltipHide ? this.props.onTooltipHide() : null;
+    this.props.onTooltipHide ? this.props.onTooltipHide({
+      target: target,
+      event: event
+    }) : null;
   }
 
   // componentDidMount() {
@@ -75,13 +78,18 @@ export default class Button extends React.Component {
     }
   }
 
+  _isTooltipChangeEvent(event) {
+    return (event.relatedTarget.getAttribute('class') !== 'sequence-text'
+      && event.relatedTarget.getAttribute('is') !== 'svg-text')
+  }
+
   render() {
 
     return (
       <rect style={{...this._getCursorStyle()}}
         onClick={this.handleClick}
-        onMouseEnter={(event) => this._handleTooltipShow(event.target)}
-        onMouseLeave={(event) => this._handleTooltipHide(event.target)}
+        onMouseEnter={(event) => this._isTooltipChangeEvent(event) && this._handleTooltipShow(event.target)}
+        onMouseLeave={(event) => this._isTooltipChangeEvent(event) && this._handleTooltipHide(event.target)}
         className={this.props.className}
         {...this._getDimension()}/>
     );

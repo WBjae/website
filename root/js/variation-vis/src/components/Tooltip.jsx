@@ -13,18 +13,8 @@ export default class Tooltip extends React.Component {
   }
 
   static propTypes = {
-    target: React.PropTypes.shape({
-      top: React.PropTypes.number,
-      left: React.PropTypes.number,
-      width: React.PropTypes.number,
-      height: React.PropTypes.number,
-    }),
-    container: React.PropTypes.shape({
-      top: React.PropTypes.number,
-      left: React.PropTypes.number,
-      width: React.PropTypes.number,
-      height: React.PropTypes.number,
-    }),
+    target: React.PropTypes.object,
+    container: React.PropTypes.object,
     title: React.PropTypes.string,
     content: React.PropTypes.string
   }
@@ -45,8 +35,11 @@ export default class Tooltip extends React.Component {
 // point on target
   _getPointer = () => {
     // take the intersecting rectangle of target and container
-    const newBox = this._getIntersectRect(this.props.target, this.props.container);
+    const containerBox = this.props.container.getBoundingClientRect();
+    const targetBox = this.props.target.getBoundingClientRect();
+    const newBox = this._getIntersectRect(targetBox, containerBox);
     const {left, top, width} = newBox;
+
     return {
       left: left + width/2,
       top: top
@@ -81,11 +74,13 @@ export default class Tooltip extends React.Component {
     if (!this._tooltipDOMNode) return;
 
     const {left, top} = this._getClientOrigin();
-    const containerLeft = this.props.container.left;
-    const containerTop = this.props.container.top;
+    const containerBox = this.props.container.getBoundingClientRect();
+    const targetBox = this.props.target.getBoundingClientRect();
+    const containerLeft = containerBox.left;
+    const containerTop = containerBox.top;
     return {
       left: left - containerLeft,
-      top: top - containerTop
+      top: top - containerTop + targetBox.bottom - targetBox.top
     };
   }
 
@@ -101,7 +96,7 @@ export default class Tooltip extends React.Component {
     const pointer = this._getPointer();
     return {
       left: pointer.left - width/2,
-      top: pointer.top - height
+      top: pointer.top
     }
   }
 
@@ -109,11 +104,17 @@ export default class Tooltip extends React.Component {
     const {left, top} = this.state;
 
     return this.props.content && this.props.target ?
-        <Popover ref={(component) => this._tooltipDOMNode = ReactDOM.findDOMNode(component)}
-          title={this.props.title}
-          placement="top"
-          positionLeft={left}
-          positionTop={top}>
+        <div
+          style={{
+            left: left,
+            top: top,
+            position: 'absolute',
+            backgroundColor: 'red',
+          }}>
+          <Popover
+            ref={(component) => this._tooltipDOMNode = ReactDOM.findDOMNode(component)}
+            title={this.props.title}
+            placement="bottom">
           <div style={{
             width: 180,
             maxHeight: 120,
@@ -124,7 +125,8 @@ export default class Tooltip extends React.Component {
               this.props.content
             }
           </div>
-        </Popover>
+          </Popover>
+        </div>
         : null;
   }
 

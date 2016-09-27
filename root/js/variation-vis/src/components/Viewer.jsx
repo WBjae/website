@@ -31,7 +31,7 @@ export default class Viewer extends React.Component {
 
       // tooltips
       tooltip: null,
-      tooltipEventID: 0,
+      stableActiveMarker: null,  // infrequently updated, triggers tooltip on multiple track
 
       //marker bar
       activeMarker: null,
@@ -126,74 +126,38 @@ export default class Viewer extends React.Component {
 
 
   showTooltip = ({title, content, target}) => {
+    const newTooltip = {
+      title: title,
+      content: content,
+      target: target,
+      container: ReactDOM.findDOMNode(this)
+    };
+    const activeMarkerPosition = this.state.activeMarkerPosition;
 
-    // // Get point in global SVG space
-    // function cursorPoint(evt){
-    //   // Create an SVGPoint for future math
-    //   const svg = evt.target.ownerSVGElement;
-    //   const pt = svg.createSVGPoint();
-    //   pt.x = evt.clientX;
-    //   pt.y = evt.clientY;
-    //   // return pt.matrixTransform(svg.getScreenCTM().inverse());
-    //   return {
-    //     x: 0,
-    //     y: 0
-    //   }
-    // }
-
-    // const {x, y} = cursorPoint(event);
-
-    const containerBox = ReactDOM.findDOMNode(this).getBoundingClientRect();
-    const targetBox = target.getBoundingClientRect();
-
-    // console.log('called');
-    // const x = targetBox.left - containerBox.left;
-    // const y = targetBox.top - containerBox.top;
-
-    // function getRectCoords(rect) {
-    //   const {left, top, height, width} = rect;
-    //   return {
-    //     left,
-    //     top,
-    //     height,
-    //     width
-    //   };
-    // }
-
-    // const target = getRectCoords(targetBox);
-    // const container = getRectCoords(containerBox);
-
-    //event.stopPropagation();
-
-    this.setState((prevState, currProps) => {
-      return {
-        tooltip: {
-          title: title,
-          content: content,
-          target: targetBox,
-          container: containerBox
-        },
-        tooltipEventID: prevState.tooltipEventID + 1,
-      };
-    });
+    if (this.state.activeMarkerPosition) {
+      this.setTimeout(() => {
+        const isMarkerStopped = this.state.activeMarkerPosition === activeMarkerPosition;
+        isMarkerStopped ? this.setState({
+          tooltip: newTooltip,
+          stableActiveMarker: activeMarkerPosition
+        }) : null;
+      }, 300);
+    } else {
+      this.setState({
+        tooltip: newTooltip
+      });
+    }
 
   }
 
 
 
-  hideTooltip = (event) => {
-    const tooltipEventID = this.state.tooltipEventID;
-
-    if (event && (event.relatedTarget.getAttribute('class') === 'sequence-text'
-      || event.relatedTarget.getAttribute('is') === 'svg-text')) {
-      return;
-    }
-
+  hideTooltip = ({target}) => {
     setTimeout(() => {
       this.setState((prevState, currProps) => {
-        return prevState.tooltipEventID === tooltipEventID ? {
+        return {
           tooltip: null
-        } : {}
+        };
       });
     }, 200);
   }
@@ -347,7 +311,7 @@ export default class Viewer extends React.Component {
                     }));
                     const xMin = coordinateMapping.toSequenceCoordinate(this._getXMin());
                     const xMax = coordinateMapping.toSequenceCoordinate(this._getXMax());
-                    const activeMarker = coordinateMapping.toSequenceCoordinate(this.state.activeMarker);
+                    const activeMarker = coordinateMapping.toSequenceCoordinate(this.state.stableActiveMarker);
                     const newChild = React.cloneElement(child, {
                       xMin: Math.floor(xMin),
                       xMax: Math.ceil(xMax),
