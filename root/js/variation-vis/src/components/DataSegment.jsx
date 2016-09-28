@@ -30,7 +30,6 @@ export default class Button extends React.Component {
   _handleTooltipHide = (target) => {
     this.props.onTooltipHide ? this.props.onTooltipHide({
       target: target,
-      event: event
     }) : null;
   }
 
@@ -79,8 +78,9 @@ export default class Button extends React.Component {
   }
 
   _isTooltipChangeEvent(event) {
-    return (event.relatedTarget.getAttribute('class') !== 'sequence-text'
-      && event.relatedTarget.getAttribute('is') !== 'svg-text')
+    return !event.relatedTarget.getAttribute ||
+      (event.relatedTarget.getAttribute('class') !== 'sequence-text' &&
+        event.relatedTarget.getAttribute('is') !== 'svg-text')
   }
 
   render() {

@@ -30,8 +30,8 @@ export default class Viewer extends React.Component {
       viewWidth: 500,
 
       // tooltips
-      tooltip: null,
-      stableActiveMarker: null,  // infrequently updated, triggers tooltip on multiple track
+      tooltips: [],
+      stableActiveMarker: 1,  // infrequently updated, triggers tooltip on multiple track
 
       //marker bar
       activeMarker: null,
@@ -132,19 +132,20 @@ export default class Viewer extends React.Component {
       target: target,
       container: ReactDOM.findDOMNode(this)
     };
-    const activeMarkerPosition = this.state.activeMarkerPosition;
-
-    if (this.state.activeMarkerPosition) {
-      this.setTimeout(() => {
-        const isMarkerStopped = this.state.activeMarkerPosition === activeMarkerPosition;
-        isMarkerStopped ? this.setState({
-          tooltip: newTooltip,
-          stableActiveMarker: activeMarkerPosition
+    const activeMarker = this.state.activeMarker;
+    if (this.state.activeMarker) {
+      setTimeout(() => {
+        const isMarkerStopped = this.state.activeMarker === activeMarker;
+        isMarkerStopped ? this.setState((prevState) => {
+          const filteredTooltips = prevState.tooltips.filter((t) => t.target !== newTooltip.target);
+          return {
+            tooltips: filteredTooltips.concat(newTooltip),
+          };
         }) : null;
       }, 300);
     } else {
       this.setState({
-        tooltip: newTooltip
+        tooltips: [newTooltip]
       });
     }
 
@@ -155,8 +156,9 @@ export default class Viewer extends React.Component {
   hideTooltip = ({target}) => {
     setTimeout(() => {
       this.setState((prevState, currProps) => {
+        const filteredTooltips = prevState.tooltips.filter((t) => t.target !== target);
         return {
-          tooltip: null
+          tooltips: filteredTooltips
         };
       });
     }, 200);
@@ -311,7 +313,7 @@ export default class Viewer extends React.Component {
                     }));
                     const xMin = coordinateMapping.toSequenceCoordinate(this._getXMin());
                     const xMax = coordinateMapping.toSequenceCoordinate(this._getXMax());
-                    const activeMarker = coordinateMapping.toSequenceCoordinate(this.state.stableActiveMarker);
+                    const activeMarker = coordinateMapping.toSequenceCoordinate(this.state.activeMarker);
                     const newChild = React.cloneElement(child, {
                       xMin: Math.floor(xMin),
                       xMax: Math.ceil(xMax),
@@ -349,9 +351,8 @@ export default class Viewer extends React.Component {
               }
             </Zoomable> : null}
         </svg>
-        { this.state.tooltip
-          ? <Tooltip {...this.state.tooltip}/>
-          : null
+        {
+          this.state.tooltips.map((tooltip) => <Tooltip {...tooltip}/>)
         }
       </div>
     );
