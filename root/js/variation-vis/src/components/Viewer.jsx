@@ -133,7 +133,7 @@ export default class Viewer extends React.Component {
       container: ReactDOM.findDOMNode(this)
     };
     const activeMarker = this.state.activeMarker;
-    if (this.state.activeMarker) {
+    if (this.state.activeMarker !== null) {
       setTimeout(() => {
         const isMarkerStopped = this.state.activeMarker === activeMarker;
         isMarkerStopped ? this.setState((prevState) => {
@@ -313,7 +313,8 @@ export default class Viewer extends React.Component {
                     }));
                     const xMin = coordinateMapping.toSequenceCoordinate(this._getXMin());
                     const xMax = coordinateMapping.toSequenceCoordinate(this._getXMax());
-                    const activeMarker = coordinateMapping.toSequenceCoordinate(this.state.activeMarker);
+                    const activeMarker = this.state.activeMarker !== null ?
+                      coordinateMapping.toSequenceCoordinate(this.state.activeMarker) : null;
                     const newChild = React.cloneElement(child, {
                       xMin: Math.floor(xMin),
                       xMax: Math.ceil(xMax),

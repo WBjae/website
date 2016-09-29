@@ -175,17 +175,17 @@ export default class Marker extends React.Component {
     return (<g>
       {
         this.props.markerPositions.map((position) => {
-          <DataSegment
+          return position !== null ? <DataSegment
             {...this._getPaddedMarkerRegion(position)}
             key={`marker-${position}`}
-            fill={'#d8b2d8'}/>
+            fill={'#d8b2d8'}/> : null
         })
       }
       {
-        <DataSegment
+        this.props.activeMarkerPosition !== null ? <DataSegment
           {...this._getPaddedMarkerRegion(this.props.activeMarkerPosition)}
           ref={(c) => this._activeMarkerComponent = c}
-          fill={'#fd0'}/>
+          fill={'#fd0'}/> : null
       }
       {
         // marker bar background

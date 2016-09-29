@@ -75,7 +75,8 @@ export default class BasicTrack extends React.Component {
 
     const getSegmentCoords = (segment) => {
       const graphicPosition = this.getHorizontalPosition(segment);
-      const isMarkerHover = segment.start <= this.props.activeMarker &&
+      const isMarkerHover = this.props.activeMarker !== null &&
+        segment.start <= this.props.activeMarker &&
         segment.end > this.props.activeMarker;
 
       return {
