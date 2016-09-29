@@ -31,7 +31,6 @@ export default class Viewer extends React.Component {
 
       // tooltips
       tooltips: [],
-      stableActiveMarker: 1,  // infrequently updated, triggers tooltip on multiple track
 
       //marker bar
       activeMarker: null,
@@ -134,15 +133,12 @@ export default class Viewer extends React.Component {
     };
     const activeMarker = this.state.activeMarker;
     if (this.state.activeMarker !== null) {
-      setTimeout(() => {
-        const isMarkerStopped = this.state.activeMarker === activeMarker;
-        isMarkerStopped ? this.setState((prevState) => {
-          const filteredTooltips = prevState.tooltips.filter((t) => t.target !== newTooltip.target);
-          return {
-            tooltips: filteredTooltips.concat(newTooltip),
-          };
-        }) : null;
-      }, 300);
+      this.setState((prevState) => {
+        const filteredTooltips = prevState.tooltips.filter((t) => t.target !== newTooltip.target);
+        return {
+          tooltips: filteredTooltips.concat(newTooltip),
+        };
+      })
     } else {
       this.setState({
         tooltips: [newTooltip]
@@ -154,14 +150,12 @@ export default class Viewer extends React.Component {
 
 
   hideTooltip = ({target}) => {
-    setTimeout(() => {
-      this.setState((prevState, currProps) => {
-        const filteredTooltips = prevState.tooltips.filter((t) => t.target !== target);
-        return {
-          tooltips: filteredTooltips
-        };
-      });
-    }, 200);
+    this.setState((prevState, currProps) => {
+      const filteredTooltips = prevState.tooltips.filter((t) => t.target !== target);
+      return {
+        tooltips: filteredTooltips
+      };
+    });
   }
 
 
@@ -293,7 +287,6 @@ export default class Viewer extends React.Component {
                 this.state.referenceSequenceLength ? <Marker
                   ref={(c) => this._markerComponent = c}
                   coordinateMapping={this._getDefaultCoordinateMap()}
-                  activeMarkerPosition={this.state.activeMarker}
                   markerPositions={this.state.markers}
                   onMarkerChange={this._handleMarkerChange}
                   height={MARKER_BAR_HEIGHT}

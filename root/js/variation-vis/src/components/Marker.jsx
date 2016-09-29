@@ -10,9 +10,15 @@ export default class Marker extends React.Component {
     getEventSVGCoords: React.PropTypes.func,
   };
 
+  constructor(props) {
+    super(props);
+    this.state = {
+      activeMarkerPosition: null
+    }
+  }
+
   static propTypes = {
     markerPositions: React.PropTypes.arrayOf(React.PropTypes.number),
-    activeMarkerPosition: React.PropTypes.number,
     onMarkerChange: React.PropTypes.func,
     // sequenceLength: React.PropTypes.number,
     coordinateMapping: React.PropTypes.shape({
@@ -131,16 +137,30 @@ export default class Marker extends React.Component {
   }
 
   _handleMarkerBarMouseMove = (event) => {
-    this.props.onMarkerChange({
+    const newPosition = this.context.getEventSVGCoords(event).x;
+    this._handleActiveMarkerChangeDelayed({
       type: 'ACTIVE_MARKER_UPDATE',
-      position: this.context.getEventSVGCoords(event).x
-    })
+      position: newPosition
+    });
   }
 
   _handleMarkerBarMouseOut = (event) => {
-    this.props.onMarkerChange({
-      type: 'ACTIVE_MARKER_DELETE'
+    this._handleActiveMarkerChangeDelayed({
+      type: 'ACTIVE_MARKER_DELETE',
+      position: null
     });
+  }
+
+  _handleActiveMarkerChangeDelayed = (action) => {
+    this.setState({
+      activeMarkerPosition: action.position
+    }, () => {
+      setTimeout(() => {
+        if (this.state.activeMarkerPosition === action.position) {
+          this.props.onMarkerChange(action);
+        }
+      }, 300);
+    })
   }
 
   _handleMarkerBarMouseClick = (event) => {
@@ -182,8 +202,8 @@ export default class Marker extends React.Component {
         })
       }
       {
-        this.props.activeMarkerPosition !== null ? <DataSegment
-          {...this._getPaddedMarkerRegion(this.props.activeMarkerPosition)}
+        this.state.activeMarkerPosition !== null ? <DataSegment
+          {...this._getPaddedMarkerRegion(this.state.activeMarkerPosition)}
           ref={(c) => this._activeMarkerComponent = c}
           fill={'#fd0'}/> : null
       }
