@@ -3,7 +3,7 @@ import ReactDOM from "react-dom";
 
 const CharApparentWidth = 8;
 
-export default class Button extends React.Component {
+export default class DataSegment extends React.Component {
 
   static propTypes = {
     title: React.PropTypes.string,
@@ -19,18 +19,31 @@ export default class Button extends React.Component {
     onTooltipHide: React.PropTypes.func,
   }
 
+  constructor(props) {
+    super(props);
+    this.state = {
+      isHighlighted: false
+    }
+  }
+
   _handleTooltipShow = (target) => {
     this.props.onTooltipShow ? this.props.onTooltipShow({
       title: this.props.title,
       content: this.props.content,
       target: target
     }) : null;
+    this.setState({
+      isHighlighted: true
+    })
   }
 
   _handleTooltipHide = (target) => {
     this.props.onTooltipHide ? this.props.onTooltipHide({
       target: target,
     }) : null;
+    this.setState({
+      isHighlighted: false
+    })
   }
 
   // componentDidMount() {
@@ -87,11 +100,13 @@ export default class Button extends React.Component {
 
     return (
       <rect style={{...this._getCursorStyle()}}
+        {...this._getDimension()}
         onClick={this.handleClick}
         onMouseEnter={(event) => this._isTooltipChangeEvent(event) && this._handleTooltipShow(event.target)}
         onMouseLeave={(event) => this._isTooltipChangeEvent(event) && this._handleTooltipHide(event.target)}
         className={this.props.className}
-        {...this._getDimension()}/>
+        stroke="#aaa"
+        strokeWidth={this.state.isHighlighted && this.props.content ? 4 : 0}/>
     );
   }
 };
