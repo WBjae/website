@@ -82,11 +82,17 @@ export default class Viewer extends React.Component {
     this._zoomable.reset();
   }
 
-  _handleTransform = (transform) => {
+  _handleTransformStart = () => {
+    this.setState({
+      isZoomPanOccuring: true
+    })
+  }
+  _handleTransformEnd = (transform) => {
     const {translateX, scaleX} = transform;
     this.setState({
       translate: translateX,
-      scale: scaleX
+      scale: scaleX,
+      isZoomPanOccuring: false
     });
   }
 
@@ -265,8 +271,10 @@ export default class Viewer extends React.Component {
             fontFamily: '"Helvetica Neue", Helvetica, Arial, sans-serif',
             background: 'white url(/img/ajax-loader.gif) center no-repeat',
           }}>
-          {this.state.referenceSequenceLength ? <Zoomable
-              onTransform={this._handleTransform}
+          {this.state.referenceSequenceLength ?
+            <Zoomable
+              onTransformStart={this._handleTransformStart}
+              onTransformEnd={this._handleTransformEnd}
               extentX={[0, this.state.fullWidth]}
               ref={(c) => this._zoomable = c}>
               <defs>
@@ -346,7 +354,8 @@ export default class Viewer extends React.Component {
             </Zoomable> : null}
         </svg>
         {
-          this.state.tooltips.map((tooltip) => <Tooltip {...tooltip}/>)
+          this.state.isZoomPanOccuring ?
+            null : this.state.tooltips.map((tooltip) => <Tooltip {...tooltip}/>)
         }
       </div>
     );

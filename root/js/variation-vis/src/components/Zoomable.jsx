@@ -6,7 +6,8 @@ import { select, event } from 'd3-selection';
 
 export default class Zoomable extends Component {
   static propTypes = {
-    onTransform: React.PropTypes.func,
+    onTransformEnd: React.PropTypes.func,
+    onTransformStart: React.PropTypes.func,
     extentX: React.PropTypes.arrayOf(React.PropTypes.number)
   }
 
@@ -57,7 +58,9 @@ export default class Zoomable extends Component {
         const v = select(this._zoomArea);
         const translateX = event.transform.x;
         const scaleX = event.transform.k;
+
         v.attr("transform",  `translate(${translateX}, 0) scale(${scaleX}, 1)`);
+        this.props.onTransformStart();
         this.setState({
           transform: {
             translateX: translateX,
@@ -75,7 +78,7 @@ export default class Zoomable extends Component {
               || this.state.transform.scaleX === scaleX;
             // shouldTransfrom if the tranform has been stable since timeout starts
             if (shouldTransfrom) {
-              this.props.onTransform(this.state.transform);
+              this.props.onTransformEnd(this.state.transform);
             }
           }
         }, 300);
@@ -95,7 +98,7 @@ export default class Zoomable extends Component {
     //     const shouldTransfrom = this.state.transform.translateX !== this.props.translateX
     //       || this.state.transform.scaleX !== this.props.scaleX;
     //     if (shouldTransfrom) {
-    //       this.props.onTransform(this.state.transform);
+    //       this.props.onTransformEnd(this.state.transform);
     //     }
     //   }
     // }, 300);
