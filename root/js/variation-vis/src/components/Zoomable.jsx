@@ -53,7 +53,7 @@ export default class Zoomable extends Component {
     // setup event listeners
     const node = ReactDOM.findDOMNode(this);
     this._zoom = zoom()
-//      .scaleExtent([1 / 2, 4])
+      .scaleExtent(this.props.extentX || [1 / 2, Infinity])
       .on("zoom", () => {
         const v = select(this._zoomArea);
         const translateX = event.transform.x;
