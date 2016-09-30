@@ -7,8 +7,8 @@ export default class Tooltip extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      left: 0,
-      top: 0
+      left: NaN,
+      top: NaN
     };
   }
 
@@ -108,6 +108,7 @@ export default class Tooltip extends React.Component {
           style={{
             left: left,
             top: top,
+            visibile: isNaN(left) || isNaN(top) ? 'hidden' : 'visible',  // use visibility:hidden instead of display:none to allow dimension of children nodes to be measured
             position: 'absolute',
             backgroundColor: 'red',
           }}>
