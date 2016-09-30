@@ -12,15 +12,17 @@ export default class Zoomable extends Component {
 
   constructor(props) {
     super(props);
-    this.transform = {
-      translateX: 0,
-      scaleX: 1
+    this.state = {
+      transform: {
+        translateX: 0,
+        scaleX: 1
+      }
     };
   }
 
 
   scaleBy(kMultiple, center) {
-    const kCurrent = this.transform.scaleX;
+    const kCurrent = this.state.transform.scaleX;
     this.scaleTo(kMultiple * kCurrent, center);
   }
 
@@ -53,17 +55,30 @@ export default class Zoomable extends Component {
 //      .scaleExtent([1 / 2, 4])
       .on("zoom", () => {
         const v = select(this._zoomArea);
-        const transform = event.transform;
-        v.attr("transform",  `translate(${transform.x}, 0) scale(${transform.k}, 1)`);
-        this.transform = {
-          translateX: transform.x,
-          scaleX: transform.k
-        };
+        const translateX = event.transform.x;
+        const scaleX = event.transform.k;
+        v.attr("transform",  `translate(${translateX}, 0) scale(${scaleX}, 1)`);
+        this.setState({
+          transform: {
+            translateX: translateX,
+            scaleX: scaleX
+          }
+        });
 
         // decide whether to set state
         // which should happen infrequently
         // two approaches
         //  1) wait until transform event has not trigger for certain amount of time
+        setTimeout(() => {
+          if (this.state.transform) {
+            const shouldTransfrom = this.state.transform.translateX === translateX
+              || this.state.transform.scaleX === scaleX;
+            // shouldTransfrom if the tranform has been stable since timeout starts
+            if (shouldTransfrom) {
+              this.props.onTransform(this.state.transform);
+            }
+          }
+        }, 300);
         //  2) wait fixed amount of time, and compare with props to decide if set state is needed
 
 
@@ -75,15 +90,15 @@ export default class Zoomable extends Component {
     select(node).call(this._zoom);
 
     // option 2) wait fixed amount of time, and compare with props to decide if set state is needed
-    this._timerId = setInterval(() => {
-      if (this.transform) {
-        const shouldTransfrom = this.transform.translateX !== this.props.translateX
-          || this.transform.scaleX !== this.props.scaleX;
-        if (shouldTransfrom) {
-          this.props.onTransform(this.transform);
-        }
-      }
-    }, 300);
+    // this._timerId = setInterval(() => {
+    //   if (this.state.transform) {
+    //     const shouldTransfrom = this.state.transform.translateX !== this.props.translateX
+    //       || this.state.transform.scaleX !== this.props.scaleX;
+    //     if (shouldTransfrom) {
+    //       this.props.onTransform(this.state.transform);
+    //     }
+    //   }
+    // }, 300);
 
     this.reset();
 
