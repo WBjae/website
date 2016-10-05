@@ -13,8 +13,8 @@ export default class Tooltip extends React.Component {
   }
 
   static propTypes = {
-    target: React.PropTypes.object,
-    container: React.PropTypes.object,
+    targetBox: React.PropTypes.object,
+    containerBox: React.PropTypes.object,
     title: React.PropTypes.string,
     content: React.PropTypes.string
   }
@@ -35,9 +35,7 @@ export default class Tooltip extends React.Component {
 // point on target
   _getPointer = () => {
     // take the intersecting rectangle of target and container
-    const containerBox = this.props.container.getBoundingClientRect();
-    const targetBox = this.props.target.getBoundingClientRect();
-    const newBox = this._getIntersectRect(targetBox, containerBox);
+    const newBox = this._getIntersectRect(this.props.targetBox, this.props.containerBox);
     const {left, top, width} = newBox;
 
     return {
@@ -74,8 +72,7 @@ export default class Tooltip extends React.Component {
     if (!this._tooltipDOMNode) return;
 
     const {left, top} = this._getClientOrigin();
-    const containerBox = this.props.container.getBoundingClientRect();
-    const targetBox = this.props.target.getBoundingClientRect();
+    const {containerBox, targetBox} = this.props;
     const containerLeft = containerBox.left;
     const containerTop = containerBox.top;
     return {
@@ -103,7 +100,7 @@ export default class Tooltip extends React.Component {
   render() {
     const {left, top} = this.state;
 
-    return this.props.content && this.props.target ?
+    return this.props.content && this.props.targetBox ?
         <div
           style={{
             left: left,

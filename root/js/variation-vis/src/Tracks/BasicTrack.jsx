@@ -97,6 +97,7 @@ export default class BasicTrack extends React.Component {
               <DataSegment
                 {...getSegmentCoords(dat)}
                 key={`data-rect-${index}`}
+                trackId={this.props.id}
                 onTooltipShow={this.props.onTooltipShow}
                 onTooltipHide={this.props.onTooltipHide}
                 className={dat.className}

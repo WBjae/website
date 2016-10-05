@@ -37,6 +37,7 @@ export default class Viewer extends React.Component {
       markers: [],
 
      };
+     this.trackComponents = {}; // maps track id to component
   }
 
   static childContextTypes = {
@@ -130,17 +131,17 @@ export default class Viewer extends React.Component {
   }
 
 
-  showTooltip = ({title, content, target}) => {
+  showTooltip = ({title, content, trackId, clientX}) => {
     const newTooltip = {
+      trackId: trackId,
       title: title,
       content: content,
-      target: target,
-      container: ReactDOM.findDOMNode(this)
+      clientX: clientX,
     };
     const activeMarker = this.state.activeMarker;
     if (this.state.activeMarker !== null) {
       this.setState((prevState) => {
-        const filteredTooltips = prevState.tooltips.filter((t) => t.target !== newTooltip.target);
+        const filteredTooltips = prevState.tooltips.filter((t) => t.trackId !== newTooltip.trackId);
         return {
           tooltips: filteredTooltips.concat(newTooltip),
         };
@@ -155,9 +156,9 @@ export default class Viewer extends React.Component {
 
 
 
-  hideTooltip = ({target}) => {
+  hideTooltip = ({trackId}) => {
     this.setState((prevState, currProps) => {
-      const filteredTooltips = prevState.tooltips.filter((t) => t.target !== target);
+      const filteredTooltips = prevState.tooltips.filter((t) => t.trackId !== trackId);
       return {
         tooltips: filteredTooltips
       };
@@ -323,6 +324,7 @@ export default class Viewer extends React.Component {
                       coordinateMapping: coordinateMapping,
                       onTooltipShow: this.showTooltip,
                       onTooltipHide: this.hideTooltip,
+                      ref: (c) => this.trackComponents[child.props.id] =  c
                     });
                     return newChild;
                   } else {
@@ -355,7 +357,26 @@ export default class Viewer extends React.Component {
         </svg>
         {
           this.state.isZoomPanOccuring ?
-            null : this.state.tooltips.map((tooltip) => <Tooltip {...tooltip}/>)
+            null : this.state.tooltips.map((tooltip) => {
+              const clientX = tooltip.clientX || tooltip.clientX === 0 ?
+                tooltip.clientX : tooltip.clientX;
+              const trackComponent = this.trackComponents['sourceDNA'];
+              console.log(tooltip);
+              console.log(trackComponent);
+              const trackClientRect = ReactDOM.findDOMNode(trackComponent).getBoundingClientRect();
+              const targetBox = {
+                ...trackClientRect,
+                x: clientX,
+                left: clientX,
+                right: trackClientRect.width,
+                width: 0,
+              }
+              return (
+                <Tooltip
+                  containerBox={ReactDOM.findDOMNode(this).getBoundingClientRect()}
+                  targetBox={targetBox}
+                  {...tooltip}/>
+              )})
         }
       </div>
     );

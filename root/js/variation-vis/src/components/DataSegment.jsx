@@ -8,6 +8,7 @@ export default class DataSegment extends React.Component {
   static propTypes = {
     title: React.PropTypes.string,
     content: React.PropTypes.object,
+    trackId: React.PropTypes.number,
     x: React.PropTypes.number,
     y: React.PropTypes.number,
     width: React.PropTypes.number,
@@ -26,20 +27,22 @@ export default class DataSegment extends React.Component {
     }
   }
 
-  _handleTooltipShow = (target) => {
+  _handleTooltipShow = (settings={}) => {
+    const {clientX} = settings;
     this.props.onTooltipShow ? this.props.onTooltipShow({
+      trackId: this.props.trackId,
       title: this.props.title,
       content: this.props.content,
-      target: target
+      clientX: clientX,
     }) : null;
     this.setState({
       isHighlighted: true
     })
   }
 
-  _handleTooltipHide = (target) => {
+  _handleTooltipHide = () => {
     this.props.onTooltipHide ? this.props.onTooltipHide({
-      target: target,
+      trackId: this.props.trackId,
     }) : null;
     this.setState({
       isHighlighted: false
@@ -56,11 +59,10 @@ export default class DataSegment extends React.Component {
 
   _flushTooltip(tooltipOnCurrent,tooltipOnNext) {
     if (tooltipOnNext !== tooltipOnCurrent) {
-      const node = ReactDOM.findDOMNode(this);
       if (tooltipOnNext) {
-        this._handleTooltipShow(node);
+        this._handleTooltipShow();
       } else {
-        this._handleTooltipHide(node);
+        this._handleTooltipHide();
       }
     }
 
@@ -102,8 +104,8 @@ export default class DataSegment extends React.Component {
       <rect style={{...this._getCursorStyle()}}
         {...this._getDimension()}
         onClick={this.handleClick}
-        onMouseEnter={(event) => this._isTooltipChangeEvent(event) && this._handleTooltipShow(event.target)}
-        onMouseLeave={(event) => this._isTooltipChangeEvent(event) && this._handleTooltipHide(event.target)}
+        onMouseEnter={(event) => this._isTooltipChangeEvent(event) && this._handleTooltipShow(event)}
+        onMouseLeave={(event) => this._isTooltipChangeEvent(event) && this._handleTooltipHide(event)}
         className={this.props.className}
         stroke="#aaa"
         strokeWidth={this.state.isHighlighted && this.props.content ? 4 : 0}/>
