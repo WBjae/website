@@ -7,7 +7,7 @@ import Ruler from './Ruler';
 import PrettyTrackSVGFilter from './PrettyTrackSVGFilter';
 import Marker from './Marker';
 import MiniMap from './MiniMap';
-import { CoordinateMappingHelper } from '../Utils';
+import { CoordinateMappingHelper, DEFAULT_TRACK_HEIGHT } from '../Utils';
 import svgPanZoom from 'svg-pan-zoom';
 import Hammer from 'hammerjs';
 
@@ -212,6 +212,22 @@ export default class Viewer extends React.Component {
     }
   }
 
+  _getViewCoords = (svgCoords) => {
+    const viewCoordX = (svgCoordX) => {
+      return this.state.viewWidth * (svgCoordX - this._getXMin()) / (this._getXMax() - this._getXMin())
+    };
+    const left = viewCoordX(svgCoords.x);
+    const width = viewCoordX(svgCoords.x + svgCoords.width) - left;
+    return {
+      left: left,
+      width: width,
+      top: svgCoords.y,
+      height: svgCoords.height,
+    }
+  }
+
+
+
   // convert svg internal coordinate to length in the domain logic (reference)
   _toReferenceUnit = (width) => {
     return width / this.state.unitLength;
@@ -358,22 +374,22 @@ export default class Viewer extends React.Component {
         {
           this.state.isZoomPanOccuring ?
             null : this.state.tooltips.map((tooltip) => {
-              const clientX = tooltip.clientX || tooltip.clientX === 0 ?
-                tooltip.clientX : tooltip.clientX;
-              const trackComponent = this.trackComponents['sourceDNA'];
-              console.log(tooltip);
-              console.log(trackComponent);
-              const trackClientRect = ReactDOM.findDOMNode(trackComponent).getBoundingClientRect();
-              const targetBox = {
-                ...trackClientRect,
-                x: clientX,
-                left: clientX,
-                right: trackClientRect.width,
-                width: 0,
-              }
+              const track = React.Children.toArray(this.props.children).find((child) => {
+                return child.props.id === tooltip.trackId
+              });
+              const x = 0;
+              const targetRegion = {
+                x: x,
+                width: 1,
+                y: track.props.y,
+                height: track.props.height || DEFAULT_TRACK_HEIGHT
+              };
+              const targetBox = this._getViewCoords(targetRegion);
+              console.log(targetRegion);
+              console.log(targetBox);
+
               return (
                 <Tooltip
-                  containerBox={ReactDOM.findDOMNode(this).getBoundingClientRect()}
                   targetBox={targetBox}
                   {...tooltip}/>
               )})
