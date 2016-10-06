@@ -27,13 +27,12 @@ export default class DataSegment extends React.Component {
     }
   }
 
-  _handleTooltipShow = (settings={}) => {
-    const {clientX} = settings;
+  _handleTooltipShow = (event) => {
     this.props.onTooltipShow && this.props.content ? this.props.onTooltipShow({
       trackId: this.props.trackId,
       title: this.props.title,
       content: this.props.content,
-      clientX: clientX,
+      event: event,
     }) : null;
     this.setState({
       isHighlighted: true

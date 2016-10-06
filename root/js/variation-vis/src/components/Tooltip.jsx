@@ -26,11 +26,15 @@ export default class Tooltip extends React.Component {
       position: 'absolute',
       display: 'flex',
       flexDirection: 'column',
+      justifyContent: 'center',
+      width: 200,
+      backgroundColor: 'red'
     };
     const tooltipStyle = {
       flex: 'none',
     };
-    return (
+
+    return this.props.targetBox.left || this.props.targetBox.left === 0 ? (
       <div style={targetBoxStyle}>
         <div
           style={tooltipStyle}>
@@ -39,7 +43,6 @@ export default class Tooltip extends React.Component {
             title={this.props.title}
             placement="right">
           <div style={{
-              width: 180,
               maxHeight: 120,
               overflow: 'hidden'
             }}
@@ -52,7 +55,7 @@ export default class Tooltip extends React.Component {
           </Popover>
         </div>
       </div>
-      )
+    ) : null;
   }
 
 }

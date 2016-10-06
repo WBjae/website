@@ -100,7 +100,6 @@ export default class Viewer extends React.Component {
 
   _updateDimensions = () => {
     const viewWidth = ReactDOM.findDOMNode(this).offsetWidth;
-    console.log(viewWidth);
     this.setState({
       viewWidth: viewWidth,
     });
@@ -131,14 +130,14 @@ export default class Viewer extends React.Component {
   }
 
 
-  showTooltip = ({title, content, trackId, clientX}) => {
+  showTooltip = ({title, content, trackId, event}) => {
     const newTooltip = {
       trackId: trackId,
       title: title,
       content: content,
-      clientX: clientX,
+      position: event ? this._getEventSVGCoords(event).x : null,
     };
-    const activeMarker = this.state.activeMarker;
+
     if (this.state.activeMarker !== null) {
       this.setState((prevState) => {
         const filteredTooltips = prevState.tooltips.filter((t) => t.trackId !== newTooltip.trackId);
@@ -214,7 +213,11 @@ export default class Viewer extends React.Component {
 
   _getViewCoords = (svgCoords) => {
     const viewCoordX = (svgCoordX) => {
-      return this.state.viewWidth * (svgCoordX - this._getXMin()) / (this._getXMax() - this._getXMin())
+      if (svgCoordX || svgCoordX === 0) {
+        return this.state.viewWidth * (svgCoordX - this._getXMin()) / (this._getXMax() - this._getXMin());
+      } else {
+        null;
+      }
     };
     const left = viewCoordX(svgCoords.x);
     const width = viewCoordX(svgCoords.x + svgCoords.width) - left;
@@ -373,26 +376,32 @@ export default class Viewer extends React.Component {
         </svg>
         {
           this.state.isZoomPanOccuring ?
-            null : this.state.tooltips.map((tooltip) => {
-              const track = React.Children.toArray(this.props.children).find((child) => {
-                return child.props.id === tooltip.trackId
+            null : React.Children.toArray(this.props.children).map((track) => {
+              const tooltip = this.state.tooltips.find((t) => {
+                return track.props.id === t.trackId
               });
-              const x = 0;
-              const targetRegion = {
-                x: x,
-                width: 1,
-                y: track.props.y,
-                height: track.props.height || DEFAULT_TRACK_HEIGHT
-              };
-              const targetBox = this._getViewCoords(targetRegion);
-              console.log(targetRegion);
-              console.log(targetBox);
 
-              return (
-                <Tooltip
-                  targetBox={targetBox}
-                  {...tooltip}/>
-              )})
+              const x = tooltip ? (tooltip.position || tooltip.position === 0) ?
+                tooltip.position : this.state.activeMarker : null;
+
+              if (x || x === 0) {
+                const targetRegion = {
+                  x: x,
+                  width: 1,
+                  y: track.props.y,
+                  height: track.props.height || DEFAULT_TRACK_HEIGHT
+                };
+                const targetBox = this._getViewCoords(targetRegion);
+
+                return (
+                  <Tooltip
+                    targetBox={targetBox}
+                    {...tooltip}/>
+                )
+              } else {
+                return null;
+              }
+            })
         }
       </div>
     );
