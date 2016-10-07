@@ -130,8 +130,9 @@ export default class Viewer extends React.Component {
   }
 
 
-  showTooltip = ({title, content, trackId, event}) => {
+  showTooltip = ({title, content, trackId, segmentId, event}) => {
     const newTooltip = {
+      segmentId: segmentId,
       trackId: trackId,
       title: title,
       content: content,
@@ -140,7 +141,7 @@ export default class Viewer extends React.Component {
 
     if (this.state.activeMarker !== null) {
       this.setState((prevState) => {
-        const filteredTooltips = prevState.tooltips.filter((t) => t.trackId !== newTooltip.trackId);
+        const filteredTooltips = prevState.tooltips.filter((t) => t.segmentId !== newTooltip.segmentId);
         return {
           tooltips: filteredTooltips.concat(newTooltip),
         };
@@ -155,9 +156,9 @@ export default class Viewer extends React.Component {
 
 
 
-  hideTooltip = ({trackId}) => {
+  hideTooltip = ({segmentId}) => {
     this.setState((prevState, currProps) => {
-      const filteredTooltips = prevState.tooltips.filter((t) => t.trackId !== trackId);
+      const filteredTooltips = prevState.tooltips.filter((t) => t.segmentId !== segmentId);
       return {
         tooltips: filteredTooltips
       };

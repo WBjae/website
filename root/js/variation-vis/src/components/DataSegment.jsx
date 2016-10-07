@@ -8,7 +8,7 @@ export default class DataSegment extends React.Component {
   static propTypes = {
     title: React.PropTypes.string,
     content: React.PropTypes.object,
-    trackId: React.PropTypes.number,
+    trackId: React.PropTypes.number.isRequired,
     x: React.PropTypes.number,
     y: React.PropTypes.number,
     width: React.PropTypes.number,
@@ -30,6 +30,7 @@ export default class DataSegment extends React.Component {
   _handleTooltipShow = (event) => {
     this.props.onTooltipShow && this.props.content ? this.props.onTooltipShow({
       trackId: this.props.trackId,
+      segmentId: this._getSegmentId(),
       title: this.props.title,
       content: this.props.content,
       event: event,
@@ -42,10 +43,16 @@ export default class DataSegment extends React.Component {
   _handleTooltipHide = () => {
     this.props.onTooltipHide ? this.props.onTooltipHide({
       trackId: this.props.trackId,
+      segmentId: this._getSegmentId(),
     }) : null;
     this.setState({
       isHighlighted: false
     })
+  }
+
+  _getSegmentId = () => {
+    const {trackId, x, width} = this.props;
+    return `${trackId}--${x}-${x + width}`;
   }
 
   // componentDidMount() {
@@ -91,7 +98,7 @@ export default class DataSegment extends React.Component {
     }
   }
 
-  _isTooltipChangeEvent(event) {
+  _isMouseLeave(event) {
     return !event.relatedTarget.getAttribute ||
       (event.relatedTarget.getAttribute('class') !== 'sequence-text' &&
         event.relatedTarget.getAttribute('is') !== 'svg-text')
@@ -103,8 +110,8 @@ export default class DataSegment extends React.Component {
       <rect style={{...this._getCursorStyle()}}
         {...this._getDimension()}
         onClick={this.handleClick}
-        onMouseEnter={(event) => this._isTooltipChangeEvent(event) && this._handleTooltipShow(event)}
-        onMouseLeave={(event) => this._isTooltipChangeEvent(event) && this._handleTooltipHide(event)}
+        onMouseMove={(event) => this._handleTooltipShow(event)}
+        onMouseLeave={(event) => this._isMouseLeave(event) && this._handleTooltipHide(event)}
         className={this.props.className}
         stroke="#aaa"
         strokeWidth={this.state.isHighlighted && this.props.content ? 4 : 0}/>
