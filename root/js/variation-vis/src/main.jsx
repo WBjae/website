@@ -264,8 +264,11 @@ class App extends React.Component {
       return tracks.findIndex((knowTrackName) => knowTrackName === trackName);
     }
 
-    const tracks = [...this.state.tracks].sort((trackDataA, trackDataB) => {
-      return _getTrackIndex(trackDataA.id) < _getTrackIndex(trackDataB.id);
+    const tracks = this.state.tracks.filter((trackData) => {
+      const index = _getTrackIndex(trackData.id);
+      return index > -1;
+    }).sort((trackDataA, trackDataB) => {
+      return _getTrackIndex(trackDataA.id) - _getTrackIndex(trackDataB.id);
     });
 
     return tracks;
