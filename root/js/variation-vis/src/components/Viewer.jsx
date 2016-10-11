@@ -393,9 +393,9 @@ export default class Viewer extends React.Component {
                   height: track.props.height || DEFAULT_TRACK_HEIGHT
                 };
                 const targetBox = this._getViewCoords(targetRegion);
-
                 return (
                   <Tooltip
+                    onHideTooltip={this.hideTooltip}
                     targetBox={targetBox}
                     {...tooltip}/>
                 )
