@@ -28,7 +28,7 @@ export default class Tooltip extends React.Component {
       flexDirection: 'column',
       justifyContent: 'center',
       width: 200,
-      backgroundColor: 'red'
+//      backgroundColor: 'red'
     };
     const tooltipStyle = {
       flex: 'none',
