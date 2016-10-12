@@ -92,7 +92,7 @@ export default class Viewer extends React.Component {
   }
 
 
-  _updateDimensions = () => {
+  updateDimensions = () => {
     const viewWidth = ReactDOM.findDOMNode(this).offsetWidth;
     console.log(viewWidth);
     this.setState({
@@ -101,8 +101,8 @@ export default class Viewer extends React.Component {
   }
 
   componentDidMount() {
-    this._updateDimensions();
-    window.addEventListener("resize", this._updateDimensions);
+    this.updateDimensions();
+    window.addEventListener("resize", this.updateDimensions);
   }
 
   componentWillUnmount() {

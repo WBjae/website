@@ -11,6 +11,7 @@ export default class TrackLabel extends React.Component {
     species: React.PropTypes.string,
     y: React.PropTypes.number,
     onTrackDescriptionRequest: React.PropTypes.func,
+    active: React.PropTypes.bool,
   }
 
   handleClick = () => {
@@ -44,6 +45,7 @@ export default class TrackLabel extends React.Component {
       top: this.props.y,
       left: 0,
       padding: '5px 10px',
+      backgroundColor: this.props.active ? "#f7f7f9" : "transparent"
     };
 
     const buttonWrapperStyle = {

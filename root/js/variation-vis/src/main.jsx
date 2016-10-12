@@ -7,7 +7,9 @@ import { Button, ButtonGroup, ButtonToolbar, Glyphicon,
   FormControl } from 'react-bootstrap';
 import Viewer from './components/Viewer';
 import TrackLegendModal from './components/TrackLegendModal';
+import Sidebar from './components/Sidebar';
 import TrackLabel from './components/TrackLabel';
+import TrackLegend from './components/TrackLegend';
 import BasicTrack, { VariationTrack, AlignmentTrack, ProteinConservationTrack } from './Tracks';
 import ColorScheme, { COLORS } from './Utils/ColorHelper';
 import HomologyModel from './Models/HomologyModel';
@@ -306,7 +308,7 @@ class App extends React.Component {
     return () => {
       this.setState({
         activeTrackModal: trackId
-      });
+      }, () => this._viewerComponent.updateDimensions());
     }
   }
 
@@ -314,7 +316,7 @@ class App extends React.Component {
     return () => {
       this.setState({
         activeTrackModal: null
-      });
+      }, () => this._viewerComponent.updateDimensions());
     }
   }
 
@@ -356,6 +358,7 @@ class App extends React.Component {
         index={index}
         y={this._getTrackYPosition(index, 40)}
         {...trackData}
+        active={this.state.activeTrackModal === trackData.id}
         onTrackDescriptionRequest={this.getTrackDescriptionRequestHandler(trackData.id)}/>
     });
   }
@@ -369,6 +372,12 @@ class App extends React.Component {
       const trackData = this.state.tracks[trackIndex];
       const {name} = trackData;
       const colorScheme = this._getTrackColorScheme(trackData);
+      return (<div className="track-label-sidebar">
+        <Sidebar onCancel={this.getTrackDescriptionCancelHandler(trackData.id)}>
+          <TrackLegend
+            colorScheme={colorScheme}/>
+        </Sidebar>
+      </div>);
       return <TrackLegendModal
           name={name}
           colorScheme={colorScheme}
@@ -440,8 +449,6 @@ class App extends React.Component {
       // //padding: '0 5',
       // width: 400
       //width: this.state.viewWidth + trackLabelColumnWidth,
-      margin: 10,
-      width: 'auto',
       height: DEFAULT_SVG_HEIGHT,
       // border:"1px solid black",
       position: "relative"
@@ -456,7 +463,10 @@ class App extends React.Component {
         {
           this.renderToolbar()
         }
-        <div id="svg-browser-container" style={containerStyle}>
+        <div className="svg-browser-container" style={containerStyle}>
+          {
+            this.renderTrackModal()
+          }
           <div className="track-label-column"
             style={{
               width: trackLabelColumnWidth,
@@ -468,10 +478,7 @@ class App extends React.Component {
               this.renderTrackLabels()
             }
           </div>
-          {
-            this.renderTrackModal()
-          }
-
+          <div className="track-main-column">
           <Viewer ref={(component) => this._viewerComponent = component}
             style={{
               //left: trackLabelColumnWidth,
@@ -500,6 +507,7 @@ class App extends React.Component {
               })
             }
           </Viewer>
+          </div>
         </div>
       </div>
     );
