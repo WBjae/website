@@ -35,11 +35,8 @@ export default class Tooltip extends React.Component {
     };
 
     return this.props.targetBox.left || this.props.targetBox.left === 0 ? (
-      <div
-        onMouseLeave={() => this.props.onHideTooltip({segmentId: this.props.segmentId})}
-        style={targetBoxStyle}>
+      <div style={targetBoxStyle}>
         <div
-          className="popover-wrapper"
           style={tooltipStyle}>
           <Popover
             ref={(component) => this._tooltipDOMNode = ReactDOM.findDOMNode(component)}

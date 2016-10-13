@@ -101,10 +101,7 @@ export default class DataSegment extends React.Component {
   _isMouseLeave(event) {
     return !event.relatedTarget.getAttribute ||
       (event.relatedTarget.getAttribute('class') !== 'sequence-text' &&
-        event.relatedTarget.getAttribute('is') !== 'svg-text' &&
-        event.relatedTarget.getAttribute('class') !== 'popover-wrapper' &&
-        event.relatedTarget.getAttribute('class') !== 'arrow' &&
-        event.relatedTarget.getAttribute('class') !== 'popover-content')
+        event.relatedTarget.getAttribute('is') !== 'svg-text')
   }
 
   render() {
