@@ -19,41 +19,36 @@ export default class MiniMap extends React.Component {
     width: React.PropTypes.number,
   }
 
-  _getViewBox = () => {
-    const {sequenceLength, height, xMin, xMax} = this.props;
-    return [0, 0, sequenceLength, height].join(' ');
+  _formatPercentage(x) {
+    return `${x * 100}%`;
   }
 
   render() {
     const {xMin, xMax, width, height, sequenceLength} = this.props;
 
-    // if the visible extends beyond the sequence, ignore the extra region in minimap
-    const correctedXMin = Math.max(xMin, 0);
-    const correctedXMax = Math.min(xMax, sequenceLength);
+    const minimapStyle = {
+      position: 'relative',
+      backgroundColor: '#eee',
+      borderRadius: 5,
+      overflow: 'hidden',  // if the visible extends beyond the sequence, ignore the extra region in minimap
+      width: '100%',
+      height: height,
+    }
+
+    const markerStyle = {
+      position: 'absolute',
+      backgroundColor: '#8ca8c3',
+      borderRadius: 5,
+      height: height,
+      width: this._formatPercentage(Math.max(0.005, (xMax - xMin) / sequenceLength)),
+      left: this._formatPercentage(xMin / sequenceLength),
+    }
 
     return (
-      <svg
-        width={width}
-        height={height}
-          preserveAspectRatio="none"
-        viewBox={this._getViewBox()}>
-        <rect
-          x={0}
-          y={0}
-          width={sequenceLength}
-          height={height}
-          rx={5}
-          ry={3}
-          fill={"#eee"}/>
-        <rect
-          x={correctedXMin}
-          y={0}
-          width={Math.max(5, correctedXMax - correctedXMin)}
-          height={height}
-          rx={5}
-          ry={3}
-          fill="#8ca8c3"/>
-      </svg>
+      <div style={minimapStyle}>
+        <div style={markerStyle}>
+        </div>
+      </div>
     )
   }
 }
