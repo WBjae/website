@@ -40,7 +40,7 @@ export default class DataSegment extends React.Component {
     })
   }
 
-  _handleTooltipHide = () => {
+  _handleTooltipHide = (event) => {
     this.props.onTooltipHide ? this.props.onTooltipHide({
       trackId: this.props.trackId,
       segmentId: this._getSegmentId(),
@@ -51,8 +51,8 @@ export default class DataSegment extends React.Component {
   }
 
   _getSegmentId = () => {
-    const {trackId, x, width} = this.props;
-    return `${trackId}--${x}-${x + width}`;
+    const {trackId, x, width, y, height} = this.props;
+    return `${trackId}--${x}-${x + width}--${y}-{y + height}`;
   }
 
   // componentDidMount() {

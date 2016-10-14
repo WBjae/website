@@ -157,12 +157,14 @@ export default class Viewer extends React.Component {
 
 
   hideTooltip = ({segmentId}) => {
-    this.setState((prevState, currProps) => {
-      const filteredTooltips = prevState.tooltips.filter((t) => t.segmentId !== segmentId);
-      return {
-        tooltips: filteredTooltips
-      };
-    });
+    setTimeout(() => {
+      this.setState((prevState, currProps) => {
+        const filteredTooltips = prevState.tooltips.filter((t) => t.segmentId !== segmentId);
+        return {
+          tooltips: filteredTooltips
+        };
+      });
+    }, 300);
   }
 
 
