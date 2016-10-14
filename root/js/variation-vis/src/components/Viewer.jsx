@@ -130,9 +130,10 @@ export default class Viewer extends React.Component {
   }
 
 
-  showTooltip = ({title, content, trackId, segmentId, event}) => {
+  showTooltip = ({title, content, trackId, segmentId, event, segmentRegion}) => {
     const newTooltip = {
       segmentId: segmentId,
+      segmentRegion: segmentRegion,
       trackId: trackId,
       title: title,
       content: content,
@@ -379,20 +380,18 @@ export default class Viewer extends React.Component {
         </svg>
         {
           this.state.isZoomPanOccuring ?
-            null : React.Children.toArray(this.props.children).map((track) => {
-              const tooltip = this.state.tooltips.find((t) => {
-                return track.props.id === t.trackId
-              });
+            null : this.state.tooltips.map((tooltip) => {
 
-              const x = tooltip ? (tooltip.position || tooltip.position === 0) ?
-                tooltip.position : this.state.activeMarker : null;
+              const segment = tooltip.segmentRegion;
+              const x = (tooltip.position || tooltip.position === 0) ?
+                tooltip.position : this.state.activeMarker;
 
               if (x || x === 0) {
                 const targetRegion = {
                   x: x,
                   width: 1,
-                  y: track.props.y,
-                  height: track.props.height || DEFAULT_TRACK_HEIGHT
+                  y: segment.y,
+                  height: segment.height
                 };
                 const targetBox = this._getViewCoords(targetRegion);
 

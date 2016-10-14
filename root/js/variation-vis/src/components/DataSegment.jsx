@@ -31,6 +31,7 @@ export default class DataSegment extends React.Component {
     this.props.onTooltipShow && this.props.content ? this.props.onTooltipShow({
       trackId: this.props.trackId,
       segmentId: this._getSegmentId(),
+      segmentRegion: this._getSegmentRegion(),
       title: this.props.title,
       content: this.props.content,
       event: event,
@@ -55,17 +56,29 @@ export default class DataSegment extends React.Component {
     return `${trackId}--${x}-${x + width}--${y}-{y + height}`;
   }
 
+  _getSegmentRegion = () => {
+    const {x, width, y, height} = this.props;
+    return {
+      x,
+      width,
+      y,
+      height,
+    }
+  }
+
   // componentDidMount() {
   //   this._flushTooltip(false, this.props.tooltipOn);
   // }
 
   componentWillReceiveProps(nextProps) {
-    this._flushTooltip(this.props.tooltipOn, nextProps.tooltipOn);
+    this._flushTooltip(nextProps);
   }
 
-  _flushTooltip(tooltipOnCurrent,tooltipOnNext) {
-    if (tooltipOnNext !== tooltipOnCurrent) {
-      if (tooltipOnNext) {
+  _flushTooltip(nextProps) {
+    const {tooltipOn, y} = this.props;
+    if (nextProps.tooltipOn !== tooltipOn ||
+      nextProps.y !== y) {
+      if (nextProps.tooltipOn) {
         this._handleTooltipShow();
       } else {
         this._handleTooltipHide();
