@@ -271,7 +271,6 @@ export default class Viewer extends React.Component {
     return (
       <div ref={(component) => this._viewerContainer = component}
         style={{
-          position: 'relative',
           width: 'auto',
           ...this.props.style
         }}>
@@ -283,6 +282,10 @@ export default class Viewer extends React.Component {
             height={10}
             sequenceLength={this.state.referenceSequenceLength / 3}/> : null
         }
+        <div
+          style={{
+            position: 'relative',
+          }}>
         <svg id="svg-browser"
           onWheel={this.handlePan}
           viewBox={this.getViewBox()}
@@ -404,7 +407,8 @@ export default class Viewer extends React.Component {
                 return null;
               }
             })
-        }
+          }
+        </div>
       </div>
     );
   }
