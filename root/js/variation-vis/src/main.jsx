@@ -494,7 +494,7 @@ class App extends React.Component {
                   {...trackData}
                   id={trackData.id}
                   index={index}
-                  key={`track${index}`}
+                  key={trackData.id}
                   tip={trackData.tip}
                   sequence={trackData.sequence}
                   sequenceLength={trackData.sequenceLength}

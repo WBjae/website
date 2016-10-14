@@ -2,6 +2,7 @@ import React from 'react';
 import BasicTrack from './BasicTrack';
 import { getVariationColorScheme } from './VariationTrack';
 import SequenceComponent from '../components/SequenceComponent';
+import DataSegment from '../components/DataSegment';
 import { DataLoader } from '../Utils';
 import ColorScheme, { COLORS } from '../Utils/ColorHelper';
 
@@ -69,12 +70,6 @@ export default class VariationBarChartTrack extends React.Component {
         }
         </ul>
       </div>);
-
-    return (<VariationSummary
-      changeType={variationDat.molecular_change}
-      changeDetail={changeDetail}
-      phenotypes={phenotypes ? phenotypes.map((phenotype) => phenotype.phenotype.label) : []}
-      phenotypeCount={variationDat.phen_count}/>);
   }
 
   _getColorScheme() {
@@ -88,20 +83,26 @@ export default class VariationBarChartTrack extends React.Component {
         tip: this._renderTooltip(binDat)
       }
     });
+
     return (<g>
       {
         binnedData.map((bin) => {
           const start = this.props.coordinateMapping.toSVGCoordinate(bin.start);
           const end = this.props.coordinateMapping.toSVGCoordinate(bin.end);
           const count = Math.min(bin.data.length, MAX_BIN_SIZE);
+          const isMarkerHover = this.props.activeMarker !== null &&
+            bin.start <= this.props.activeMarker &&
+            bin.end > this.props.activeMarker;
           return (<Bar
-            onMouseEnter={(event) => this.props.onTooltipShow ? this.props.onTooltipShow({title: `${bin.data.length} variation(s)`, content: bin.tip, event: event}) : null}
-            onMouseLeave={this.props.onTooltipHide}
             start={start}
             end={end}
             key={`bar-${start}-${end}`}
             height={count * UNIT_HEIGHT}
-            baseline={this.props.y + MAX_BIN_SIZE * UNIT_HEIGHT}/>)
+            baseline={this.props.y + MAX_BIN_SIZE * UNIT_HEIGHT}
+            onTooltipShow={this.props.onTooltipShow}
+            onTooltipHide={this.props.onTooltipHide}
+            tooltipOn={isMarkerHover}
+            content={bin.tip}/>)
         })
       }
       </g>)
@@ -112,7 +113,7 @@ export default class VariationBarChartTrack extends React.Component {
 const Bar = (props) => {
   const {baseline, start, end, height} = props;
 
-  return (<rect
+  return (<DataSegment
     {...props}
     x={start}
     y={baseline - height}

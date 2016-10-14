@@ -7,7 +7,7 @@ import Ruler from './Ruler';
 import PrettyTrackSVGFilter from './PrettyTrackSVGFilter';
 import Marker from './Marker';
 import MiniMap from './MiniMap';
-import { CoordinateMappingHelper } from '../Utils';
+import { CoordinateMappingHelper, DEFAULT_TRACK_HEIGHT } from '../Utils';
 import svgPanZoom from 'svg-pan-zoom';
 import Hammer from 'hammerjs';
 
@@ -30,14 +30,14 @@ export default class Viewer extends React.Component {
       viewWidth: 500,
 
       // tooltips
-      tooltip: null,
-      tooltipEventID: 0,
+      tooltips: [],
 
       //marker bar
       activeMarker: null,
       markers: [],
 
      };
+     this.trackComponents = {}; // maps track id to component
   }
 
   static childContextTypes = {
@@ -83,18 +83,23 @@ export default class Viewer extends React.Component {
     this._zoomable.reset();
   }
 
-  _handleTransform = (transform) => {
+  _handleTransformStart = () => {
+    this.setState({
+      isZoomPanOccuring: true
+    })
+  }
+  _handleTransformEnd = (transform) => {
     const {translateX, scaleX} = transform;
     this.setState({
       translate: translateX,
-      scale: scaleX
+      scale: scaleX,
+      isZoomPanOccuring: false
     });
   }
 
 
   updateDimensions = () => {
     const viewWidth = ReactDOM.findDOMNode(this).offsetWidth;
-    console.log(viewWidth);
     this.setState({
       viewWidth: viewWidth,
     });
@@ -125,77 +130,42 @@ export default class Viewer extends React.Component {
   }
 
 
-  showTooltip = ({title, content, event}) => {
+  showTooltip = ({title, content, trackId, segmentId, event, segmentRegion}) => {
+    const newTooltip = {
+      segmentId: segmentId,
+      segmentRegion: segmentRegion,
+      trackId: trackId,
+      title: title,
+      content: content,
+      position: event ? this._getEventSVGCoords(event).x : null,
+    };
 
-    // // Get point in global SVG space
-    // function cursorPoint(evt){
-    //   // Create an SVGPoint for future math
-    //   const svg = evt.target.ownerSVGElement;
-    //   const pt = svg.createSVGPoint();
-    //   pt.x = evt.clientX;
-    //   pt.y = evt.clientY;
-    //   // return pt.matrixTransform(svg.getScreenCTM().inverse());
-    //   return {
-    //     x: 0,
-    //     y: 0
-    //   }
-    // }
-
-    // const {x, y} = cursorPoint(event);
-
-    const containerBox = this._viewerContainer.getBoundingClientRect();
-    const targetBox = event.target.getBoundingClientRect();
-
-    // console.log('called');
-    // const x = targetBox.left - containerBox.left;
-    // const y = targetBox.top - containerBox.top;
-
-    // function getRectCoords(rect) {
-    //   const {left, top, height, width} = rect;
-    //   return {
-    //     left,
-    //     top,
-    //     height,
-    //     width
-    //   };
-    // }
-
-    // const target = getRectCoords(targetBox);
-    // const container = getRectCoords(containerBox);
-
-    //event.stopPropagation();
-
-    this.setState((prevState, currProps) => {
-      return {
-        tooltip: {
-          title: title,
-          content: content,
-          target: targetBox,
-          container: containerBox
-        },
-        tooltipEventID: prevState.tooltipEventID + 1,
-      };
-    });
+    if (this.state.activeMarker !== null) {
+      this.setState((prevState) => {
+        const filteredTooltips = prevState.tooltips.filter((t) => t.segmentId !== newTooltip.segmentId);
+        return {
+          tooltips: filteredTooltips.concat(newTooltip),
+        };
+      })
+    } else {
+      this.setState({
+        tooltips: [newTooltip]
+      });
+    }
 
   }
 
 
 
-  hideTooltip = (event) => {
-    const tooltipEventID = this.state.tooltipEventID;
-
-    if (event && (event.relatedTarget.getAttribute('class') === 'sequence-text'
-      || event.relatedTarget.getAttribute('is') === 'svg-text')) {
-      return;
-    }
-
+  hideTooltip = ({segmentId}) => {
     setTimeout(() => {
       this.setState((prevState, currProps) => {
-        return prevState.tooltipEventID === tooltipEventID ? {
-          tooltip: null
-        } : {}
+        const filteredTooltips = prevState.tooltips.filter((t) => t.segmentId !== segmentId);
+        return {
+          tooltips: filteredTooltips
+        };
       });
-    }, 200);
+    }, 300);
   }
 
 
@@ -245,6 +215,26 @@ export default class Viewer extends React.Component {
     }
   }
 
+  _getViewCoords = (svgCoords) => {
+    const viewCoordX = (svgCoordX) => {
+      if (svgCoordX || svgCoordX === 0) {
+        return this.state.viewWidth * (svgCoordX - this._getXMin()) / (this._getXMax() - this._getXMin());
+      } else {
+        null;
+      }
+    };
+    const left = viewCoordX(svgCoords.x);
+    const width = viewCoordX(svgCoords.x + svgCoords.width) - left;
+    return {
+      left: left,
+      width: width,
+      top: svgCoords.y,
+      height: svgCoords.height,
+    }
+  }
+
+
+
   // convert svg internal coordinate to length in the domain logic (reference)
   _toReferenceUnit = (width) => {
     return width / this.state.unitLength;
@@ -281,7 +271,6 @@ export default class Viewer extends React.Component {
     return (
       <div ref={(component) => this._viewerContainer = component}
         style={{
-          position: 'relative',
           width: 'auto',
           ...this.props.style
         }}>
@@ -293,6 +282,10 @@ export default class Viewer extends React.Component {
             height={10}
             sequenceLength={this.state.referenceSequenceLength / 3}/> : null
         }
+        <div
+          style={{
+            position: 'relative',
+          }}>
         <svg id="svg-browser"
           onWheel={this.handlePan}
           viewBox={this.getViewBox()}
@@ -305,8 +298,10 @@ export default class Viewer extends React.Component {
             fontFamily: '"Helvetica Neue", Helvetica, Arial, sans-serif',
             background: 'white url(/img/ajax-loader.gif) center no-repeat',
           }}>
-          {this.state.referenceSequenceLength ? <Zoomable
-              onTransform={this._handleTransform}
+          {this.state.referenceSequenceLength ?
+            <Zoomable
+              onTransformStart={this._handleTransformStart}
+              onTransformEnd={this._handleTransformEnd}
               extentX={[0, this.state.fullWidth]}
               ref={(c) => this._zoomable = c}>
               <defs>
@@ -325,8 +320,8 @@ export default class Viewer extends React.Component {
               }
               {
                 this.state.referenceSequenceLength ? <Marker
+                  ref={(c) => this._markerComponent = c}
                   coordinateMapping={this._getDefaultCoordinateMap()}
-                  activeMarkerPosition={this.state.activeMarker}
                   markerPositions={this.state.markers}
                   onMarkerChange={this._handleMarkerChange}
                   height={MARKER_BAR_HEIGHT}
@@ -346,12 +341,16 @@ export default class Viewer extends React.Component {
                     }));
                     const xMin = coordinateMapping.toSequenceCoordinate(this._getXMin());
                     const xMax = coordinateMapping.toSequenceCoordinate(this._getXMax());
+                    const activeMarker = this.state.activeMarker !== null ?
+                      coordinateMapping.toSequenceCoordinate(this.state.activeMarker) : null;
                     const newChild = React.cloneElement(child, {
                       xMin: Math.floor(xMin),
                       xMax: Math.ceil(xMax),
+                      activeMarker: activeMarker,
                       coordinateMapping: coordinateMapping,
                       onTooltipShow: this.showTooltip,
                       onTooltipHide: this.hideTooltip,
+                      ref: (c) => this.trackComponents[child.props.id] =  c
                     });
                     return newChild;
                   } else {
@@ -382,10 +381,34 @@ export default class Viewer extends React.Component {
               }
             </Zoomable> : null}
         </svg>
-        { this.state.tooltip
-          ? <Tooltip {...this.state.tooltip}/>
-          : null
-        }
+        {
+          this.state.isZoomPanOccuring ?
+            null : this.state.tooltips.map((tooltip) => {
+
+              const segment = tooltip.segmentRegion;
+              const x = (tooltip.position || tooltip.position === 0) ?
+                tooltip.position : this.state.activeMarker;
+
+              if (x || x === 0) {
+                const targetRegion = {
+                  x: x,
+                  width: 1,
+                  y: segment.y,
+                  height: segment.height
+                };
+                const targetBox = this._getViewCoords(targetRegion);
+
+                return (
+                  <Tooltip
+                    targetBox={targetBox}
+                    {...tooltip}/>
+                )
+              } else {
+                return null;
+              }
+            })
+          }
+        </div>
       </div>
     );
   }

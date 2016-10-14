@@ -6,7 +6,7 @@ import DataSegment from '../components/DataSegment';
 import DataSegmentLabel from '../components/DataSegmentLabel';
 import PrettyTrackSVGFilter from '../components/PrettyTrackSVGFilter';
 import $ from 'jquery';
-import { TRACK_HEIGHT, DataLoader, CoordinateMappingHelper } from '../Utils'
+import { DEFAULT_TRACK_HEIGHT, DataLoader, CoordinateMappingHelper } from '../Utils'
 const DEFAULT_MAX_BIN_COUNT = 100;  // default maximum number of bins to show in the visible region
 
 export default class BasicTrack extends React.Component {
@@ -29,6 +29,7 @@ export default class BasicTrack extends React.Component {
     }),
     xMin: React.PropTypes.number,
     xMax: React.PropTypes.number,
+    activeMarker: React.PropTypes.number,
 //    viewWidth: React.PropTypes.number,
     onTooltipShow: React.PropTypes.func,
     onTooltipHide: React.PropTypes.func,
@@ -46,7 +47,7 @@ export default class BasicTrack extends React.Component {
   }
 
   static defaultProps = {
-    height: 25,
+    height: DEFAULT_TRACK_HEIGHT,
     data: [],
     pretty: true,
   }
@@ -74,11 +75,16 @@ export default class BasicTrack extends React.Component {
 
     const getSegmentCoords = (segment) => {
       const graphicPosition = this.getHorizontalPosition(segment);
+      const isMarkerHover = this.props.activeMarker !== null &&
+        segment.start <= this.props.activeMarker &&
+        segment.end > this.props.activeMarker;
+
       return {
         x: graphicPosition.start,
         y: this.getVerticalPosition(),
         width: graphicPosition.end - graphicPosition.start,
-        height: this.props.height
+        height: this.props.height,
+        tooltipOn: isMarkerHover,
       };
     }
 
@@ -91,8 +97,12 @@ export default class BasicTrack extends React.Component {
               <DataSegment
                 {...getSegmentCoords(dat)}
                 key={`data-rect-${index}`}
-                onMouseEnter={(event) => this.props.onTooltipShow ? this.props.onTooltipShow({title: dat.name, content: dat.tip, event: event}) : null}
-                onMouseLeave={this.props.onTooltipHide}
+                trackId={this.props.id}
+                onTooltipShow={this.props.onTooltipShow}
+                onTooltipHide={this.props.onTooltipHide}
+                className={dat.className}
+                title={dat.name}
+                content={dat.tip}
                 link={dat.link}
                 fill={dat.color || 'grey'}
                 fillOpacity={(dat.fillOpacity || dat.fillOpacity === 0) ? dat.fillOpacity : 1}/>

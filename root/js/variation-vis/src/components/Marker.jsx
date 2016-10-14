@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import BasicTrack from '../Tracks';
+import DataSegment from '../components/DataSegment';
 
 export default class Marker extends React.Component {
 
@@ -10,9 +10,15 @@ export default class Marker extends React.Component {
     getEventSVGCoords: React.PropTypes.func,
   };
 
+  constructor(props) {
+    super(props);
+    this.state = {
+      activeMarkerPosition: null
+    }
+  }
+
   static propTypes = {
     markerPositions: React.PropTypes.arrayOf(React.PropTypes.number),
-    activeMarkerPosition: React.PropTypes.number,
     onMarkerChange: React.PropTypes.func,
     // sequenceLength: React.PropTypes.number,
     coordinateMapping: React.PropTypes.shape({
@@ -21,6 +27,31 @@ export default class Marker extends React.Component {
     }).isRequired,
     height: React.PropTypes.number,
     viewHeight: React.PropTypes.number,
+  }
+
+  getActiveMarkerClientRect() {
+    if (this._activeMarkerComponent) {
+      const node = ReactDOM.findDOMNode(this._activeMarkerComponent);
+      return node.getBoundingClientRect();
+    } else {
+      return null;
+    }
+  }
+
+  _getPaddedMarkerRegion = (position) => {
+    const sequenceCood = this._cursorSequenceCoordinate(position);
+    const paddedSequenceCoord = this._padSequneceCoordinates(sequenceCood);
+    const {coordinateMapping} = this.props;
+
+    const start = coordinateMapping.toSVGCoordinate(paddedSequenceCoord.start);
+    const end = coordinateMapping.toSVGCoordinate(paddedSequenceCoord.end);
+
+    return {
+      x: start,
+      y: 0,
+      width: end - start,
+      height: this.props.viewHeight || 600
+    };
   }
 
   _cursorSequenceCoordinate(position) {
@@ -106,16 +137,30 @@ export default class Marker extends React.Component {
   }
 
   _handleMarkerBarMouseMove = (event) => {
-    this.props.onMarkerChange({
+    const newPosition = this.context.getEventSVGCoords(event).x;
+    this._handleActiveMarkerChangeDelayed({
       type: 'ACTIVE_MARKER_UPDATE',
-      position: this.context.getEventSVGCoords(event).x
-    })
+      position: newPosition
+    });
   }
 
   _handleMarkerBarMouseOut = (event) => {
-    this.props.onMarkerChange({
-      type: 'ACTIVE_MARKER_DELETE'
+    this._handleActiveMarkerChangeDelayed({
+      type: 'ACTIVE_MARKER_DELETE',
+      position: null
     });
+  }
+
+  _handleActiveMarkerChangeDelayed = (action) => {
+    this.setState({
+      activeMarkerPosition: action.position
+    }, () => {
+      setTimeout(() => {
+        if (this.state.activeMarkerPosition === action.position) {
+          this.props.onMarkerChange(action);
+        }
+      }, 300);
+    })
   }
 
   _handleMarkerBarMouseClick = (event) => {
@@ -146,27 +191,21 @@ export default class Marker extends React.Component {
   }
 
   render() {
-    const markerData = this.props.markerPositions.map((position) => {
-      const coords = this._padSequneceCoordinates(this._cursorSequenceCoordinate(position));
-      const color = '#d8b2d8';
-      return {
-        ...coords,
-        color,
-      };
-    });
-    const allMarkerData = markerData.concat({
-      color: '#fd0',
-      ...this._padSequneceCoordinates(this._cursorSequenceCoordinate(this.props.activeMarkerPosition))
-    })
 
     return (<g>
       {
-        this.props.cursorSVGCoordinate === null ? null : <BasicTrack
-          opacity={0.8}
-          data={allMarkerData}
-          coordinateMapping={this.props.coordinateMapping}
-          y={0}
-          height={this.props.viewHeight || 600}/>
+        this.props.markerPositions.map((position) => {
+          return position !== null ? <DataSegment
+            {...this._getPaddedMarkerRegion(position)}
+            key={`marker-${position}`}
+            fill={'#d8b2d8'}/> : null
+        })
+      }
+      {
+        this.state.activeMarkerPosition !== null ? <DataSegment
+          {...this._getPaddedMarkerRegion(this.state.activeMarkerPosition)}
+          ref={(c) => this._activeMarkerComponent = c}
+          fill={'#fd0'}/> : null
       }
       {
         // marker bar background

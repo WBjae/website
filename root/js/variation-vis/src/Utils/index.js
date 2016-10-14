@@ -17,7 +17,7 @@ export {
   CoordinateMappingHelper
 }
 
-export const TRACK_HEIGHT = 20;
+export const DEFAULT_TRACK_HEIGHT = 25;
 
 export function toWormBaseURL({taxonomy, class: wormbaseClass, id}) {
   const speciesScopedClasses = new Set(['variation', 'gene']);
