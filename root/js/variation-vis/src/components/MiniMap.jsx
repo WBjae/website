@@ -19,37 +19,40 @@ export default class MiniMap extends React.Component {
     width: React.PropTypes.number,
   }
 
-  getViewBox = () => {
+  _getViewBox = () => {
     const {sequenceLength, height, xMin, xMax} = this.props;
-    const viewBoxX = Math.min(xMin, 0);
-    const viewBoxWidth = Math.max(xMax - xMin, sequenceLength);
-    return [viewBoxX, 0, viewBoxWidth, height].join(' ');
+    return [0, 0, sequenceLength, height].join(' ');
   }
 
   render() {
-    const {xMin, xMax, width, height} = this.props;
+    const {xMin, xMax, width, height, sequenceLength} = this.props;
+
+    // if the visible extends beyond the sequence, ignore the extra region in minimap
+    const correctedXMin = Math.max(xMin, 0);
+    const correctedXMax = Math.min(xMax, sequenceLength);
+
     return (
       <svg
-        width={this.props.width}
-        height={this.props.height}
-        viewBox={this.getViewBox()}>
-        <BasicTrack
-          coordinateMapping={new CoordinateMappingHelper.ExactCoordinateMapping()}
-          opacity={0.8}
-          data={[{
-            start: 0,
-            end: this.props.sequenceLength
-          }]}
-          y={0}
-          height={this.props.height || 600}/>
+        width={width}
+        height={height}
+          preserveAspectRatio="none"
+        viewBox={this._getViewBox()}>
         <rect
-          x={xMin}
+          x={0}
           y={0}
-          width={xMax - xMin}
+          width={sequenceLength}
           height={height}
-          fill="transparent"
-          strokeWidth={2}
-          stroke="#406f9c"/>
+          rx={5}
+          ry={3}
+          fill={"#eee"}/>
+        <rect
+          x={correctedXMin}
+          y={0}
+          width={Math.max(5, correctedXMax - correctedXMin)}
+          height={height}
+          rx={5}
+          ry={3}
+          fill="#8ca8c3"/>
       </svg>
     )
   }
