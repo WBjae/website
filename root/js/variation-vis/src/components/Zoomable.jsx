@@ -46,14 +46,16 @@ export default class Zoomable extends Component {
   }
 
   _getXMin = () => {
-    const {translateX, scaleX} = this.state.transform;
-    return translateX * -1 / scaleX;
+    return this._getX(0);
   }
 
   _getXMax = () => {
+    return this._getX(this._getSVGWidth());
+  }
+
+  _getX = (apparentX) => {
     const {translateX, scaleX} = this.state.transform;
-    const [, , width] = this.props.viewBox;
-    return (translateX * -1 / scaleX) + (width / scaleX);
+    return (apparentX - translateX) / scaleX;
   }
 
   _getSVGWidth = () => {
@@ -66,6 +68,10 @@ export default class Zoomable extends Component {
     const startX = x;
     const endX = x + width;
     return (startX + endX) / 2;
+  }
+
+  _handleMiniMapUpdate = (center) => {
+    this.scaleBy(1, center);
   }
 
   _setup() {
@@ -177,8 +183,7 @@ export default class Zoomable extends Component {
         <MiniMap
           xMin={this._getXMin()}
           xMax={this._getXMax()}
-          width="100%"
-          height={10}
+          onUpdate={this._handleMiniMapUpdate}
           fullWidth={this._getSVGWidth()}/>
         <svg id="svg-browser"
           viewBox={this.props.viewBox.join(' ')}
