@@ -12,7 +12,7 @@ export default class MiniMap extends React.Component {
   };
 
   static propTypes = {
-    sequenceLength: React.PropTypes.number,
+    fullWidth: React.PropTypes.number,
     xMin: React.PropTypes.number,
     xMax: React.PropTypes.number,
     height: React.PropTypes.number,
@@ -24,7 +24,7 @@ export default class MiniMap extends React.Component {
   }
 
   render() {
-    const {xMin, xMax, width, height, sequenceLength} = this.props;
+    const {xMin, xMax, width, height, fullWidth} = this.props;
 
     const minimapStyle = {
       position: 'relative',
@@ -40,8 +40,8 @@ export default class MiniMap extends React.Component {
       backgroundColor: '#8ca8c3',
       borderRadius: 5,
       height: height,
-      width: this._formatPercentage(Math.max(0.005, (xMax - xMin) / sequenceLength)),
-      left: this._formatPercentage(xMin / sequenceLength),
+      width: this._formatPercentage(Math.max(0.005, (xMax - xMin) / fullWidth)),
+      left: this._formatPercentage(xMin / fullWidth),
     }
 
     return (

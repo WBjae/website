@@ -116,7 +116,7 @@ export default class Viewer extends React.Component {
 
   getViewBox = () => {
     const {fullWidth} = this.state;
-    return [0, 0, fullWidth, DEFAULT_SVG_HEIGHT].join(' ');
+    return [0, 0, fullWidth, DEFAULT_SVG_HEIGHT];
   }
 
   _getDefaultCoordinateMap = () => {
@@ -272,37 +272,14 @@ export default class Viewer extends React.Component {
       <div ref={(component) => this._viewerContainer = component}
         style={{
           width: 'auto',
+          position: 'relative',
           ...this.props.style
         }}>
-        {
-          this.state.referenceSequenceLength ? <MiniMap
-            xMin={this._getDefaultCoordinateMap().toSequenceCoordinate(this._getXMin())}
-            xMax={this._getDefaultCoordinateMap().toSequenceCoordinate(this._getXMax())}
-            width="100%"
-            height={10}
-            sequenceLength={this.state.referenceSequenceLength / 3}/> : null
-        }
-        <div
-          style={{
-            position: 'relative',
-          }}>
-        <svg id="svg-browser"
-          onWheel={this.handlePan}
-          viewBox={this.getViewBox()}
-          height="100%"
-          width="100%"
-          preserveAspectRatio="none"
-          style={{
-            border:"1px solid #aaaaaa",
-            marginTop: 5,
-            fontFamily: '"Helvetica Neue", Helvetica, Arial, sans-serif',
-            background: 'white url(/img/ajax-loader.gif) center no-repeat',
-          }}>
           {this.state.referenceSequenceLength ?
             <Zoomable
               onTransformStart={this._handleTransformStart}
               onTransformEnd={this._handleTransformEnd}
-              extentX={[0, this.state.fullWidth]}
+              viewBox={this.getViewBox()}
               ref={(c) => this._zoomable = c}>
               <defs>
                 {
@@ -380,7 +357,6 @@ export default class Viewer extends React.Component {
                   fill={'#cccccc'}/>
               }
             </Zoomable> : null}
-        </svg>
         {
           this.state.isZoomPanOccuring ?
             null : this.state.tooltips.map((tooltip) => {
@@ -393,7 +369,7 @@ export default class Viewer extends React.Component {
                 const targetRegion = {
                   x: x,
                   width: 1,
-                  y: segment.y,
+                  y: segment.y + 10,
                   height: segment.height
                 };
                 const targetBox = this._getViewCoords(targetRegion);
@@ -408,7 +384,6 @@ export default class Viewer extends React.Component {
               }
             })
           }
-        </div>
       </div>
     );
   }
