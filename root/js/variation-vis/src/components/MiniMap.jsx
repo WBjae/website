@@ -13,6 +13,7 @@ export default class MiniMap extends React.Component {
   };
 
   static propTypes = {
+    onUpdate: React.PropTypes.func,
     fullWidth: React.PropTypes.number,
     xMin: React.PropTypes.number,
     xMax: React.PropTypes.number,
@@ -20,7 +21,22 @@ export default class MiniMap extends React.Component {
     width: React.PropTypes.number,
   }
 
-  _handleClick = (event) => {
+  _handleMouseDown = (event) => {
+    document.addEventListener('mousemove', this._handleDragMouseMove);
+    document.addEventListener('mouseup', this._handleMouseEnd);
+    this._onDragUpdate(event);
+  }
+
+  _handleDragMouseMove = (event) => {
+    this._onDragUpdate(event);
+  }
+
+  _handleMouseEnd = (event) => {
+    document.removeEventListener('mousemove', this._handleDragMouseMove);
+    document.removeEventListener('mouseup', this._handleMouseEnd);
+  }
+
+  _onDragUpdate = (event) => {
     if (this.props.onUpdate) {
       const containerBox = ReactDOM.findDOMNode(this).getBoundingClientRect();
       const newCenter = (event.clientX - containerBox.left) / containerBox.width *
@@ -28,8 +44,6 @@ export default class MiniMap extends React.Component {
       this.props.onUpdate(newCenter);
     }
   }
-
-
 
   _formatPercentage(x) {
     return `${x * 100}%`;
@@ -48,21 +62,26 @@ export default class MiniMap extends React.Component {
       height: 10,
     }
 
-    const markerStyle = {
-      position: 'absolute',
-      backgroundColor: '#8ca8c3',
-      borderRadius: 5,
-      height: '100%',
-      width: this._formatPercentage(Math.max(0.005, (xMax - xMin) / fullWidth)),
-      left: this._formatPercentage(xMin / fullWidth),
-    }
-
     return (
       <div style={minimapStyle}
-        onClick={this._handleClick}>
-        <div style={markerStyle}>
-        </div>
+        onMouseDown={this._handleMouseDown}>
+        <MiniMapMarker
+          width={this._formatPercentage(Math.max(0.005, (xMax - xMin) / fullWidth))}
+          left={this._formatPercentage(xMin / fullWidth)}/>
       </div>
     )
   }
+}
+
+const MiniMapMarker = (props) => {
+  const {width, left} = props;
+  const markerStyle = {
+    position: 'absolute',
+    backgroundColor: '#8ca8c3',
+    borderRadius: 5,
+    height: '100%',
+    width,
+    left,
+  };
+  return (<div style={markerStyle}></div>)
 }
