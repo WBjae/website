@@ -280,6 +280,7 @@ export default class Viewer extends React.Component {
               onTransformStart={this._handleTransformStart}
               onTransformEnd={this._handleTransformEnd}
               viewBox={this.getViewBox()}
+              coordinateMapping={this._getDefaultCoordinateMap()}
               ref={(c) => this._zoomable = c}>
               <defs>
                 {

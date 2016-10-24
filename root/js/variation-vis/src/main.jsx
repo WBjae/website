@@ -482,7 +482,7 @@ class App extends React.Component {
           <Viewer ref={(component) => this._viewerComponent = component}
             style={{
               //left: trackLabelColumnWidth,
-              overflow: 'hidden',
+              //overflow: 'hidden',
               width: 'auto',
             }}>
             {

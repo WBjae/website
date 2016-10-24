@@ -10,6 +10,7 @@ export default class Zoomable extends Component {
     onTransformEnd: React.PropTypes.func,
     onTransformStart: React.PropTypes.func,
     viewBox: React.PropTypes.arrayOf(React.PropTypes.number).isRequired,
+    coordinateMapping: React.PropTypes.object,
   }
 
   constructor(props) {
@@ -184,7 +185,8 @@ export default class Zoomable extends Component {
           xMin={this._getXMin()}
           xMax={this._getXMax()}
           onUpdate={this._handleMiniMapUpdate}
-          fullWidth={this._getSVGWidth()}/>
+          fullWidth={this._getSVGWidth()}
+          coordinateMapping={this.props.coordinateMapping}/>
         <svg id="svg-browser"
           viewBox={this.props.viewBox.join(' ')}
           height="100%"
