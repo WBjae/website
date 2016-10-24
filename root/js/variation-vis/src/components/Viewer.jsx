@@ -305,6 +305,9 @@ export default class Viewer extends React.Component {
                   height={MARKER_BAR_HEIGHT}
                   viewHeight={DEFAULT_SVG_HEIGHT}>
                   <Ruler
+                    coordinateMapping={this._getDefaultCoordinateMap()}
+                    xMin={this._getXMin()}
+                    xMax={this._getXMax()}                    
                     height={DEFAULT_SVG_HEIGHT}/>
                 </Marker> : null
               }
