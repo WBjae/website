@@ -3,12 +3,14 @@ import ReactDOM from 'react-dom';
 import { zoom, zoomTransform, zoomIdentity } from 'd3-zoom';
 import { drag } from 'd3-drag';
 import { select, event } from 'd3-selection';
+import MiniMap from './MiniMap';
 
 export default class Zoomable extends Component {
   static propTypes = {
     onTransformEnd: React.PropTypes.func,
     onTransformStart: React.PropTypes.func,
-    extentX: React.PropTypes.arrayOf(React.PropTypes.number)
+    viewBox: React.PropTypes.arrayOf(React.PropTypes.number).isRequired,
+    coordinateMapping: React.PropTypes.object,
   }
 
   constructor(props) {
@@ -31,7 +33,7 @@ export default class Zoomable extends Component {
     // transform point x such that it occupies centerPosition
     // k * x + t = centerPosition
     const t = this._getCenterPosition() - (k * center);
-    const node = ReactDOM.findDOMNode(this);
+    const node = ReactDOM.findDOMNode(this._zoomContainer);
     select(node).call(this._zoom.transform, zoomIdentity.translate(t, 0).scale(k));
   }
 
@@ -40,20 +42,44 @@ export default class Zoomable extends Component {
   }
 
   translateBy(t) {
-    const node = ReactDOM.findDOMNode(this);
+    const node = ReactDOM.findDOMNode(this._zoomContainer);
     this._zoom.translateBy(select(node), t);
   }
 
+  _getXMin = () => {
+    return this._getX(0);
+  }
+
+  _getXMax = () => {
+    return this._getX(this._getSVGWidth());
+  }
+
+  _getX = (apparentX) => {
+    const {translateX, scaleX} = this.state.transform;
+    return (apparentX - translateX) / scaleX;
+  }
+
+  _getSVGWidth = () => {
+    const [, , width] = this.props.viewBox;
+    return width;
+  }
+
   _getCenterPosition() {
-    const [startX, endX] = this.props.extentX;
+    const [x, y, width, height] = this.props.viewBox;
+    const startX = x;
+    const endX = x + width;
     return (startX + endX) / 2;
+  }
+
+  _handleMiniMapUpdate = (center) => {
+    this.scaleBy(1, center);
   }
 
   _setup() {
     // setup event listeners
-    const node = ReactDOM.findDOMNode(this);
+    const node = ReactDOM.findDOMNode(this._zoomContainer);
     this._zoom = zoom()
-      .scaleExtent(this.props.extentX || [1 / 2, Infinity])
+      .scaleExtent([1 / 2, Infinity])
       .on("zoom", () => {
         const v = select(this._zoomArea);
         const translateX = event.transform.x;
@@ -154,15 +180,36 @@ export default class Zoomable extends Component {
 
   render() {
     return (
-      <svg
-        x={0}
-        y={0}>
-        <g ref={(c) => {this._zoomArea = c}}>
-        {
-          this.props.children
-        }
-        </g>
-      </svg>)
+      <div>
+        <MiniMap
+          xMin={this._getXMin()}
+          xMax={this._getXMax()}
+          onUpdate={this._handleMiniMapUpdate}
+          fullWidth={this._getSVGWidth()}
+          coordinateMapping={this.props.coordinateMapping}/>
+        <svg id="svg-browser"
+          viewBox={this.props.viewBox.join(' ')}
+          height="100%"
+          width="100%"
+          preserveAspectRatio="none"
+          style={{
+            border:"1px solid #aaaaaa",
+            marginTop: 5,
+            fontFamily: '"Helvetica Neue", Helvetica, Arial, sans-serif',
+            background: 'white url(/img/ajax-loader.gif) center no-repeat',
+          }}>
+          <svg
+            ref={(c) => {this._zoomContainer = c}}
+            x={0}
+            y={0}>
+            <g ref={(c) => {this._zoomArea = c}}>
+            {
+              this.props.children
+            }
+            </g>
+          </svg>
+        </svg>
+      </div>)
   }
 
 }

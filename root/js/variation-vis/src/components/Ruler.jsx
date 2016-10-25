@@ -7,13 +7,16 @@ export default class Ruler extends React.Component {
 
   static propTypes = {
     height: React.PropTypes.number,
+    coordinateMapping: React.PropTypes.shape({
+      toSVGCoordinate: React.PropTypes.func,
+      toSequenceCoordinate: React.PropTypes.func
+    }).isRequired,
+    xMin: React.PropTypes.number,
+    xMax: React.PropTypes.number,
   }
 
   static contextTypes = {
-    getXMin: React.PropTypes.func,
-    getXMax: React.PropTypes.func,
     toWidth: React.PropTypes.func,
-    toReferenceUnit: React.PropTypes.func,
   }
 
   getTickLabelWidth = (position) => {
@@ -22,15 +25,15 @@ export default class Ruler extends React.Component {
   }
 
   _formatLabelText = (labelValue) => {
-    return labelValue % 1000 === 0 ? `${labelValue / 1000}k` : labelValue;
+    return labelValue % 1000 === 0 && labelValue !== 0 ?
+      `${labelValue / 1000}k` : labelValue;
   }
 
 
   render() {
     const maxIntervalCount = 10;
-    const xMin = this.context.getXMin();
-    const xMax = this.context.getXMax();
-    const tickPositions = getTicks(xMin, xMax, maxIntervalCount);
+    const {xMin, xMax, coordinateMapping} = this.props;
+    const ticks = getTicks(coordinateMapping.toSequenceCoordinate(xMin), coordinateMapping.toSequenceCoordinate(xMax), maxIntervalCount);
     const strokeWidth = this.context.toWidth(1);
     const yOffset = 0;
 
@@ -45,7 +48,8 @@ export default class Ruler extends React.Component {
         </g>
         <g>
         {
-          tickPositions.map((position, i) => {
+          ticks.map((value, i) => {
+            const position = this.props.coordinateMapping.toSVGCoordinate(value);
             return <line key={`tick-${i}`}
               x1={position} y1={yOffset}
               x2={position} y2={yOffset + this.props.height}
@@ -56,10 +60,11 @@ export default class Ruler extends React.Component {
         </g>
         <g>
         {
-          tickPositions.map((position, i) => {
-            const labelValue = this.context.toReferenceUnit ? this.context.toReferenceUnit(position) : null;
-            const labelText = isNaN(labelValue) ? null : this._formatLabelText(labelValue);
-            return labelText && labelText !== 0 ? <text key={`tick-${i}`}
+          ticks.map((value, i) => {
+            const position = this.props.coordinateMapping.toSVGCoordinate(value);
+            const labelText = isNaN(value) ? null : this._formatLabelText(value
+            );
+            return labelText || labelText === 0 ? <text key={`tick-${i}`}
               x={position} y={yOffset+ 25}
               fontSize={12}
               textAnchor="middle"
