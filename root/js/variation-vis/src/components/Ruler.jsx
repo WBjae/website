@@ -25,14 +25,15 @@ export default class Ruler extends React.Component {
   }
 
   _formatLabelText = (labelValue) => {
-    return labelValue % 1000 === 0 ? `${labelValue / 1000}k` : labelValue;
+    return labelValue % 1000 === 0 && labelValue !== 0 ?
+      `${labelValue / 1000}k` : labelValue;
   }
 
 
   render() {
     const maxIntervalCount = 10;
     const {xMin, xMax, coordinateMapping} = this.props;
-    const tickPositions = getTicks(coordinateMapping.toSequenceCoordinate(xMin), coordinateMapping.toSequenceCoordinate(xMax), maxIntervalCount);
+    const ticks = getTicks(coordinateMapping.toSequenceCoordinate(xMin), coordinateMapping.toSequenceCoordinate(xMax), maxIntervalCount);
     const strokeWidth = this.context.toWidth(1);
     const yOffset = 0;
 
@@ -47,7 +48,7 @@ export default class Ruler extends React.Component {
         </g>
         <g>
         {
-          tickPositions.map((value, i) => {
+          ticks.map((value, i) => {
             const position = this.props.coordinateMapping.toSVGCoordinate(value);
             return <line key={`tick-${i}`}
               x1={position} y1={yOffset}
@@ -59,11 +60,11 @@ export default class Ruler extends React.Component {
         </g>
         <g>
         {
-          tickPositions.map((value, i) => {
+          ticks.map((value, i) => {
             const position = this.props.coordinateMapping.toSVGCoordinate(value);
             const labelText = isNaN(value) ? null : this._formatLabelText(value
             );
-            return labelText && labelText !== 0 ? <text key={`tick-${i}`}
+            return labelText || labelText === 0 ? <text key={`tick-${i}`}
               x={position} y={yOffset+ 25}
               fontSize={12}
               textAnchor="middle"
