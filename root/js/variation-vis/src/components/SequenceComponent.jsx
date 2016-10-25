@@ -1,7 +1,7 @@
 import React from 'react';
 //import { ScaleIndependentComponent } from './ScaleIndependentComponent.jsx';
 
-const MIN_SEQUENCE_CHAR_WIDTH = 12;  // hide sequence if not enough space per char
+const SEQUENCE_CHAR_WIDTH = 12;  // hide sequence if not enough space per char
 
 class SequenceComponent extends React.Component {
 
@@ -43,7 +43,7 @@ class SequenceComponent extends React.Component {
   }
 
   shouldShow = () => {
-    return this.props.sequence && this._getCharWidth() > MIN_SEQUENCE_CHAR_WIDTH;
+    return this.props.sequence && this._getCharWidth() > SEQUENCE_CHAR_WIDTH;
   }
 
   renderColor = () => {
@@ -66,24 +66,32 @@ class SequenceComponent extends React.Component {
   }
 
   render() {
-
+    const {width, apparentWidth, sequence} = this.props;
+    const charSVGWidth = SEQUENCE_CHAR_WIDTH * width / apparentWidth;
+    const charSVGOffset = (width / sequence.length - charSVGWidth) / 2;
     const coords = this.getCoord();
 
     return this.shouldShow() ? <g>
         {
           this.props.colorScheme ? this.renderColor() : null
         }
-        <text is="svg-text"
+        {
+          this.props.sequence.split('').map((char, index) => {
+            const x = coords.x + charSVGOffset + width / sequence.length * index;
+            return (<text is="svg-text"
               class="sequence-text"
               {...coords}
+              x={x}
               text-anchor="start"
               font-size="12"
               font-family='Menlo, Monaco, Consolas, "Courier New", monospace'
-              textLength={coords.width}
-              lengthAdjust="spacing"
+              textLength={charSVGWidth}
+              lengthAdjust="spacingAndGlyphs"
               fill="#333333">
-          {this.props.sequence}
-        </text>
+              {char}
+            </text>)
+          })
+        }
       </g> : null;
   }
 }
