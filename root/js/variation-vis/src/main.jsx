@@ -1,11 +1,14 @@
 import "babel-polyfill";
 import React from 'react';
+import { Provider, connect } from 'react-redux';
+import store from './store';
+import {updateRefseq} from './actions';
 import { render, unmountComponentAtNode } from 'react-dom';
 import { Button, ButtonGroup, ButtonToolbar, Glyphicon,
   FormGroup,
   ControlLabel,
   FormControl } from 'react-bootstrap';
-import Viewer from './components/Viewer';
+import Viewer from './containers/Viewer';
 import TrackLegendModal from './components/TrackLegendModal';
 import Sidebar from './components/Sidebar';
 import TrackLabel from './components/TrackLabel';
@@ -22,6 +25,7 @@ class App extends React.Component {
 
   static propTypes = {
     geneID: React.PropTypes.string.isRequired,
+    onRefseqUpdate: React.PropTypes.func.isRequired,
   }
 
   constructor(props) {
@@ -43,15 +47,14 @@ class App extends React.Component {
     //   , 5000);
   }
 
-  _getData(geneID) {
+  _getData = (geneID) => {
     const model = new HomologyModel(geneID);
 
 
     const referencePromise = model.getAlignedDNA().then((data) => {
       const referenceSequence = data.source.align_seq;
-      this._viewerComponent.setup({
-        referenceSequenceLength: referenceSequence.length  // set the width of svg proportional to length of reference sequence
-      });
+      console.log(this.props.onRefseqUpdate);
+      this.props.onRefseqUpdate(referenceSequence.length);
 
       this._setTrackState({
         id: 'sourceDNA',
@@ -515,12 +518,18 @@ class App extends React.Component {
 
 }
 
-
+const mapDispatchToProps = (dispatch, ownProps) => ({
+  onRefseqUpdate: (refseqLength) => dispatch(updateRefseq(refseqLength))
+});
+const WrappedApp = connect(null, mapDispatchToProps)(App);
 function displayView(geneID, elementId) {
   const element = document.getElementById(elementId);
   if (element) {
     unmountComponentAtNode(element);
-    render(<App geneID={geneID}/>, element);
+    render(
+      <Provider store={store}>
+        <WrappedApp geneID={geneID}/>
+      </Provider>, element);
   }
 };
 

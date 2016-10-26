@@ -1,21 +1,19 @@
-import "babel-polyfill";
 import React from 'react';
 import ReactDOM from 'react-dom';
-import Zoomable from './Zoomable';
-import Tooltip from './Tooltip';
-import Ruler from './Ruler';
-import PrettyTrackSVGFilter from './PrettyTrackSVGFilter';
-import Marker from './Marker';
-import MiniMap from './MiniMap';
+import { connect } from 'react-redux'
+import Zoomable from '../containers/ZoomableContainer';
+import Tooltip from '../components/Tooltip';
+import Ruler from '../components/Ruler';
+import PrettyTrackSVGFilter from '../components/PrettyTrackSVGFilter';
+import Marker from '../components/Marker';
 import { CoordinateMappingHelper, DEFAULT_TRACK_HEIGHT } from '../Utils';
-import svgPanZoom from 'svg-pan-zoom';
-import Hammer from 'hammerjs';
+import { getFullWidth } from '../selectors';
 
 const DEFAULT_SVG_INTERNAL_WIDTH = 100;
 const DEFAULT_SVG_HEIGHT = 600;  // use the same vertical coordinate system for internal vs apparent
 const MARKER_BAR_HEIGHT = 12;
 
-export default class Viewer extends React.Component {
+class Viewer extends React.Component {
 
   constructor(props) {
     super(props);
@@ -23,10 +21,6 @@ export default class Viewer extends React.Component {
       //lastMoveTime: Number.NEGATIVE_INFINITY,
 
       // zoomPan scale and position
-      scale: 1,
-      translate: 0,
-      isZoomPanOccuring: false,
-      fullWidth: DEFAULT_SVG_INTERNAL_WIDTH,
       viewWidth: 500,
 
       // tooltips
@@ -37,7 +31,14 @@ export default class Viewer extends React.Component {
       markers: [],
 
      };
-     this.trackComponents = {}; // maps track id to component
+  }
+
+  static propTypes = {
+    scale: React.PropTypes.number,
+    translate: React.PropTypes.number,
+    referenceSequenceLength: React.PropTypes.number,
+    fullWidth: React.PropTypes.number,
+    isZoomPanOccuring: React.PropTypes.bool,
   }
 
   static childContextTypes = {
@@ -54,14 +55,14 @@ export default class Viewer extends React.Component {
 
   getChildContext() {
     return {
-      zoomFactor: this.state.scale,
+      zoomFactor: this.props.scale,
       viewWidth: this.state.viewWidth,
       getXMin: this._getXMin,
       getXMax: this._getXMax,
       toWidth: this._toWidth,
       getEventSVGCoords: this._getEventSVGCoords,
       toReferenceUnit: this._toReferenceUnit,
-      isZoomPanOccuring: this.state.isZoomPanOccuring
+      isZoomPanOccuring: this.props.isZoomPanOccuring
     }
   }
 
@@ -83,21 +84,6 @@ export default class Viewer extends React.Component {
     this._zoomable.reset();
   }
 
-  _handleTransformStart = () => {
-    this.setState({
-      isZoomPanOccuring: true
-    })
-  }
-  _handleTransformEnd = (transform) => {
-    const {translateX, scaleX} = transform;
-    this.setState({
-      translate: translateX,
-      scale: scaleX,
-      isZoomPanOccuring: false
-    });
-  }
-
-
   updateDimensions = () => {
     const viewWidth = ReactDOM.findDOMNode(this).offsetWidth;
     this.setState({
@@ -115,15 +101,15 @@ export default class Viewer extends React.Component {
   }
 
   getViewBox = () => {
-    const {fullWidth} = this.state;
+    const {fullWidth} = this.props;
     return [0, 0, fullWidth, DEFAULT_SVG_HEIGHT];
   }
 
   _getDefaultCoordinateMap = () => {
     if (!this._defaultCoordinateMapping) {
       this._defaultCoordinateMapping =  new CoordinateMappingHelper.LinearCoordinateMapping({
-        sequenceLength: this.state.referenceSequenceLength / 3,
-        svgWidth: this.state.fullWidth
+        sequenceLength: this.props.referenceSequenceLength / 3,
+        svgWidth: this.props.fullWidth
       });
     }
     return this._defaultCoordinateMapping;
@@ -177,38 +163,27 @@ export default class Viewer extends React.Component {
     return nextState.zoomPanCallId === this.state.zoomPanCallId;
   }
 
-
-  setup(configs) {
-    let {referenceSequenceLength, unitLength} = configs;
-    unitLength = unitLength || 10;
-    this.setState({
-      unitLength: unitLength,
-      fullWidth: referenceSequenceLength * unitLength,
-      referenceSequenceLength
-    });
-  }
-
   _getXMin = () => {
-    const {translate, scale, fullWidth} = this.state;
+    const {translate, scale, fullWidth} = this.props;
     return translate * -1 / scale;
   }
 
   _getXMax = () => {
-    const {translate, scale, fullWidth} = this.state;
+    const {translate, scale, fullWidth} = this.props;
     return (translate * -1 / scale) + (fullWidth / scale);
   }
 
   // convert apparent width to with used by SVG internally
   _toWidth = (apparentWidth) => {
-    const apparentFullWidth = this.state.viewWidth * this.state.scale;
-    return apparentWidth * this.state.fullWidth / apparentFullWidth;
+    const apparentFullWidth = this.state.viewWidth * this.props.scale;
+    return apparentWidth * this.props.fullWidth / apparentFullWidth;
   }
 
   _getEventSVGCoords = (event) => {
     const containerRect = this._viewerContainer.getBoundingClientRect();
     const offsetX = event.clientX - containerRect.left;
     const offsetY = event.clientY - containerRect.top;
-    const svgOffsetX = offsetX * this.state.fullWidth / (this.state.scale * this.state.viewWidth);
+    const svgOffsetX = offsetX * this.props.fullWidth / (this.props.scale * this.state.viewWidth);
     return {
       x: svgOffsetX + this._getXMin(),
       y: offsetY
@@ -275,10 +250,8 @@ export default class Viewer extends React.Component {
           position: 'relative',
           ...this.props.style
         }}>
-          {this.state.referenceSequenceLength ?
+          {this.props.referenceSequenceLength ?
             <Zoomable
-              onTransformStart={this._handleTransformStart}
-              onTransformEnd={this._handleTransformEnd}
               viewBox={this.getViewBox()}
               coordinateMapping={this._getDefaultCoordinateMap()}
               ref={(c) => this._zoomable = c}>
@@ -297,7 +270,7 @@ export default class Viewer extends React.Component {
                   fill={'#ffffff'}/>
               }
               {
-                this.state.referenceSequenceLength ? <Marker
+                this.props.referenceSequenceLength ? <Marker
                   ref={(c) => this._markerComponent = c}
                   coordinateMapping={this._getDefaultCoordinateMap()}
                   markerPositions={this.state.markers}
@@ -307,7 +280,7 @@ export default class Viewer extends React.Component {
                   <Ruler
                     coordinateMapping={this._getDefaultCoordinateMap()}
                     xMin={this._getXMin()}
-                    xMax={this._getXMax()}                    
+                    xMax={this._getXMax()}
                     height={DEFAULT_SVG_HEIGHT}/>
                 </Marker> : null
               }
@@ -318,7 +291,7 @@ export default class Viewer extends React.Component {
                   if (child) {
                     const coordinateMapping = child.props.coordinateMapping || (new CoordinateMappingHelper.LinearCoordinateMapping({
                       sequenceLength: child.props.sequence ? child.props.sequence.length : child.props.sequenceLength,
-                      svgWidth: this.state.fullWidth
+                      svgWidth: this.props.fullWidth
                     }));
                     const xMin = coordinateMapping.toSequenceCoordinate(this._getXMin());
                     const xMax = coordinateMapping.toSequenceCoordinate(this._getXMax());
@@ -331,7 +304,6 @@ export default class Viewer extends React.Component {
                       coordinateMapping: coordinateMapping,
                       onTooltipShow: this.showTooltip,
                       onTooltipHide: this.hideTooltip,
-                      ref: (c) => this.trackComponents[child.props.id] =  c
                     });
                     return newChild;
                   } else {
@@ -343,7 +315,7 @@ export default class Viewer extends React.Component {
               {
                 /* loading region foreground */
                 <rect
-                  x={this._getXMin() - this.state.fullWidth}
+                  x={this._getXMin() - this.props.fullWidth}
                   y={0}
                   width={this.state.fullWidth}
                   height={DEFAULT_SVG_HEIGHT}
@@ -362,7 +334,7 @@ export default class Viewer extends React.Component {
               }
             </Zoomable> : null}
         {
-          this.state.isZoomPanOccuring ?
+          this.props.isZoomPanOccuring ?
             null : this.state.tooltips.map((tooltip) => {
 
               const segment = tooltip.segmentRegion;
@@ -393,3 +365,18 @@ export default class Viewer extends React.Component {
   }
 
 }
+
+const mapStateToProps = (state, ownProps) => {
+  return {
+    translate: state.viewer.translate,
+    scale: state.viewer.scale,
+    isZoomPanOccuring: state.viewer.isZoomPanOccuring,
+    referenceSequenceLength: state.viewer.referenceSequenceLength,
+    fullWidth: getFullWidth(state, ownProps)
+  }
+}
+
+const ViewerContainer = connect(
+  mapStateToProps
+)(Viewer);
+export default ViewerContainer;

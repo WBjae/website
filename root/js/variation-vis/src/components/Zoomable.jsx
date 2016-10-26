@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 import { zoom, zoomTransform, zoomIdentity } from 'd3-zoom';
 import { drag } from 'd3-drag';
 import { select, event } from 'd3-selection';
-import MiniMap from './MiniMap';
+import MiniMap from '../components/MiniMap';
 
 export default class Zoomable extends Component {
   static propTypes = {
