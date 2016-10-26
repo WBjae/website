@@ -9,7 +9,11 @@ export const startTransform = () => ({
   type: 'START_TRANSFORM'
 });
 
-export const endTransform = (transform) => ({
-  type: 'END_TRANSFORM',
+export const updateTransform = (transform) => ({
+  type: 'UPDATE_TRANSFORM',
   transform: transform
+})
+
+export const endTransform = () => ({
+  type: 'END_TRANSFORM',
 });

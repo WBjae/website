@@ -7,8 +7,11 @@ import MiniMap from '../components/MiniMap';
 
 export default class Zoomable extends Component {
   static propTypes = {
+    translateX: React.PropTypes.number,
+    scaleX: React.PropTypes.number,
     onTransformEnd: React.PropTypes.func,
     onTransformStart: React.PropTypes.func,
+    onTransformUpdate: React.PropTypes.func,
     viewBox: React.PropTypes.arrayOf(React.PropTypes.number).isRequired,
     coordinateMapping: React.PropTypes.object,
   }
@@ -75,59 +78,29 @@ export default class Zoomable extends Component {
     this.scaleBy(1, center);
   }
 
+
   _setup() {
     // setup event listeners
     const node = ReactDOM.findDOMNode(this._zoomContainer);
     this._zoom = zoom()
       .scaleExtent([1 / 2, Infinity])
+      .on("start", () => {
+        this.props.onTransformStart
+      })
       .on("zoom", () => {
-        const v = select(this._zoomArea);
         const translateX = event.transform.x;
         const scaleX = event.transform.k;
 
-        v.attr("transform",  `translate(${translateX}, 0) scale(${scaleX}, 1)`);
-        this.props.onTransformStart();
-        this.setState({
-          transform: {
-            translateX: translateX,
-            scaleX: scaleX
-          }
+        this.props.onTransformUpdate({
+          translateX: translateX,
+          scaleX: scaleX
         });
-
-        // decide whether to set state
-        // which should happen infrequently
-        // two approaches
-        //  1) wait until transform event has not trigger for certain amount of time
-        setTimeout(() => {
-          if (this.state.transform) {
-            const shouldTransfrom = this.state.transform.translateX === translateX
-              || this.state.transform.scaleX === scaleX;
-            // shouldTransfrom if the tranform has been stable since timeout starts
-            if (shouldTransfrom) {
-              this.props.onTransformEnd(this.state.transform);
-            }
-          }
-        }, 300);
-        //  2) wait fixed amount of time, and compare with props to decide if set state is needed
-
-
-        // console.log(ReactDOM.findDOMNode(this._zoomedComponent))
-        // console.log(v.property('__zoom'));
-        // (function(){console.log(zoomTransform(v.node()))})()
-      });
+      })
+      .on('end', () => {
+        this.props.onTransformEnd()
+      })
 
     select(node).call(this._zoom);
-
-    // option 2) wait fixed amount of time, and compare with props to decide if set state is needed
-    // this._timerId = setInterval(() => {
-    //   if (this.state.transform) {
-    //     const shouldTransfrom = this.state.transform.translateX !== this.props.translateX
-    //       || this.state.transform.scaleX !== this.props.scaleX;
-    //     if (shouldTransfrom) {
-    //       this.props.onTransformEnd(this.state.transform);
-    //     }
-    //   }
-    // }, 300);
 
     this.reset();
 
@@ -136,46 +109,24 @@ export default class Zoomable extends Component {
   _teardown() {
     // clean up event listeners
     select(node).on(".zoom", null);  // listener uses name ".zoom", note the "."
-    // clean up intervals
-    clearInterval(this._timerId);
-    this._timerId = null;
+    select(node).on(".start", null);
+    select(node).on(".end", null);
   }
 
   componentDidMount() {
     this._setup();
   }
 
-  componentWillReceiveProps() {
-    // transform svg image based on props
-    // const transform = this._parseTransform(this._calculateTransformFromProps());
-    // console.log(transform);
-    // select(this._zoomArea).attr("transform",  `translate(${transform.x}, 0) scale(${transform.kx}, 1)`);
+  componentDidUpdate(prevProps, prevState) {
+    if (prevProps.translateX !== this.props.translateX ||
+      prevProps.scaleX !== this.props.scaleX) {
+      const v = select(this._zoomArea);
+      v.attr("transform",  `translate(${this.props.translateX}, 0) scale(${this.props.scaleX}, 1)`);
+    }
   }
 
   componentWillUnmount() {
     this._teardown();
-  }
-
-  _parseTransform(transformString='') {
-    const matchTranslate = transformString.match(/translate\((.+?)\)/);
-    const [x, y] = matchTranslate
-      ? matchTranslate[1].split(',')
-      : [0, 0];
-
-    const matchScale = transformString.match(/scale\((.+?)\)/);
-    const [kx, ky] = matchScale ? matchScale[1].split(',') : [1, 1];
-
-    return {
-      x: x,
-      y: y || x,
-      kx: kx,
-      ky: ky || kx,
-    }
-  }
-
-  _calculateTransformFromProps() {
-    const {translateX, scaleX} = this.props;
-    return `translate(${translateX}, 0) scale(${scaleX}, 1)`;
   }
 
   render() {

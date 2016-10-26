@@ -1,6 +1,8 @@
 const initialState = {
   scale: 1,
   translate: 0,
+  _scaleX: 1,  // internal state, use scale instead unless absolutely necessary
+  _translateX: 0,  // internal state, use translate instead unless absolutely necessary
   isZoomPanOccuring: false
 }
 
@@ -11,11 +13,17 @@ const viewer = (state = initialState, action) => {
         ...state,
         isZoomPanOccuring: true
       }
+    case 'UPDATE_TRANSFORM':
+      return {
+        ...state,
+        _translateX: action.transform.translateX,
+        _scaleX: action.transform.scaleX,
+      }
     case 'END_TRANSFORM':
       return {
         ...state,
-        translate: action.transform.translateX,
-        scale: action.transform.scaleX,
+        translate:  state._translateX,
+        scale: state._scaleX,
         isZoomPanOccuring: false
       }
     case 'UPDATE_REFSEQ':
