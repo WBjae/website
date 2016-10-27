@@ -1,6 +1,6 @@
 import { connect } from 'react-redux'
 import Zoomable from '../components/Zoomable';
-import {startTransform, endTransform, updateTransform} from '../actions';
+import { startTransform, endTransform, updateTransform, requestReset } from '../actions';
 
 
 const mapDispatchToProps = (dispatch) => ({
@@ -12,7 +12,10 @@ const mapDispatchToProps = (dispatch) => ({
   },
   onTransformEnd: (transform) => {
     dispatch(endTransform(transform));
-  }
+  },
+  onResetRequest: () => {
+    dispatch(requestReset())
+  },
 });
 
 const mapStateToProps = (state) => {

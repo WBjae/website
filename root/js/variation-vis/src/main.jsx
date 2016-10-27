@@ -9,6 +9,7 @@ import { Button, ButtonGroup, ButtonToolbar, Glyphicon,
   ControlLabel,
   FormControl } from 'react-bootstrap';
 import Viewer from './containers/Viewer';
+import Toolbar from './containers/Toolbar';
 import TrackLegendModal from './components/TrackLegendModal';
 import Sidebar from './components/Sidebar';
 import TrackLabel from './components/TrackLabel';
@@ -327,19 +328,7 @@ class App extends React.Component {
     return (<div style={{margin: "20px auto 20px 250px", height: 30}}>
 
       <form className="form-inline">
-        <div style={{display: 'inline-block'}}>
-          <ButtonToolbar>
-            <ButtonGroup bsSize="large">
-              <Button onClick={() => this._viewerComponent.getZoomHandler(2)()}><Glyphicon glyph="zoom-in" /></Button>
-              <Button onClick={() => this._viewerComponent.getZoomHandler(0.5)()}><Glyphicon glyph="zoom-out" /></Button>
-              <Button onClick={() => this._viewerComponent.getPanHandler(0.5)()}><Glyphicon glyph="chevron-left" /></Button>
-              <Button onClick={() => this._viewerComponent.getPanHandler(-0.5)()}><Glyphicon glyph="chevron-right" /></Button>
-           </ButtonGroup>
-            <ButtonGroup>
-              <Button onClick={() => this._viewerComponent.handleZoomPanReset()} bsSize="large" style={{fontSize:14}}>Reset</Button>
-            </ButtonGroup>
-          </ButtonToolbar>
-        </div>
+        <Toolbar/>
         <FormGroup bsClass="aaa form-group" controlId="formControlsSelect">
           <ControlLabel srOnly={true}>Select</ControlLabel>
           <FormControl

@@ -12,6 +12,7 @@ export default class Zoomable extends Component {
     onTransformEnd: React.PropTypes.func,
     onTransformStart: React.PropTypes.func,
     onTransformUpdate: React.PropTypes.func,
+    onResetRequest: React.PropTypes.func,
     viewBox: React.PropTypes.arrayOf(React.PropTypes.number).isRequired,
     coordinateMapping: React.PropTypes.object,
   }
@@ -85,16 +86,22 @@ export default class Zoomable extends Component {
     this._zoom = zoom()
       .scaleExtent([1 / 2, Infinity])
       .on("start", () => {
-        this.props.onTransformStart
+        this.props.onTransformStart()
       })
       .on("zoom", () => {
         const translateX = event.transform.x;
         const scaleX = event.transform.k;
+        // update the DOM with tranform
+        const v = select(this._zoomArea);
+        v.attr("transform",  `translate(${this.props.translateX}, 0) scale(${this.props.scaleX}, 1)`);
 
-        this.props.onTransformUpdate({
-          translateX: translateX,
-          scaleX: scaleX
-        });
+        if (translateX !== this.props.translateX || scaleX !== this.props.scaleX) {
+          // conditional to avoid dispatch action when sync up event.transform value
+          this.props.onTransformUpdate({
+            translateX: translateX,
+            scaleX: scaleX
+          });
+        }
       })
       .on('end', () => {
         this.props.onTransformEnd()
@@ -102,7 +109,7 @@ export default class Zoomable extends Component {
 
     select(node).call(this._zoom);
 
-    this.reset();
+    this.props.onResetRequest();
 
   }
 
@@ -120,8 +127,9 @@ export default class Zoomable extends Component {
   componentDidUpdate(prevProps, prevState) {
     if (prevProps.translateX !== this.props.translateX ||
       prevProps.scaleX !== this.props.scaleX) {
-      const v = select(this._zoomArea);
-      v.attr("transform",  `translate(${this.props.translateX}, 0) scale(${this.props.scaleX}, 1)`);
+      // sync up event.transform value
+      const node = ReactDOM.findDOMNode(this._zoomContainer);
+      select(node).call(this._zoom.transform, zoomIdentity.translate(this.props.translateX, 0).scale(this.props.scaleX));
     }
   }
 

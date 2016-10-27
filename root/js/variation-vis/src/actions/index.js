@@ -17,3 +17,17 @@ export const updateTransform = (transform) => ({
 export const endTransform = () => ({
   type: 'END_TRANSFORM',
 });
+
+export const requestZoom = (zoomBy) => ({
+  type: 'REQUEST_ZOOM',
+  zoomBy: zoomBy
+});
+
+export const requestPan = (panBy) => ({
+  type: 'REQUEST_PAN',
+  panBy: panBy
+});
+
+export const requestReset = () => ({
+  type: 'REQUEST_RESET'
+});
