@@ -5,6 +5,7 @@ import { updateViewWidth} from '../actions';
 import Zoomable from '../containers/ZoomableContainer';
 import MiniMap from '../containers/MiniMapContainer';
 import Tooltip from '../components/Tooltip';
+import LoadingVeil from '../components/LoadingVeil';
 import Ruler from '../components/Ruler';
 import PrettyTrackSVGFilter from '../components/PrettyTrackSVGFilter';
 import Marker from '../components/Marker';
@@ -237,15 +238,11 @@ class Viewer extends React.Component {
                   <PrettyTrackSVGFilter/>
                 }
               </defs>
-              {
-                /* visibile region background */
-                <rect
-                  x={this._getXMin()}
-                  y={0}
-                  width={this._getXMax() - this._getXMin()}
-                  height={DEFAULT_SVG_HEIGHT}
-                  fill={'#ffffff'}/>
-              }
+              <LoadingVeil
+                xMin={this._getXMin()}
+                xMax={this._getXMax()}
+                height={DEFAULT_SVG_HEIGHT}
+                fullWidth={this.props.fullWidth}>
               {
                 this.props.referenceSequenceLength ? <Marker
                   ref={(c) => this._markerComponent = c}
@@ -289,25 +286,7 @@ class Viewer extends React.Component {
                 })
               }
               </g>
-              {
-                /* loading region foreground */
-                <rect
-                  x={this._getXMin() - this.props.fullWidth}
-                  y={0}
-                  width={this.state.fullWidth}
-                  height={DEFAULT_SVG_HEIGHT}
-                  opacity={0.7}
-                  fill={'#cccccc'}/>
-              }
-              {
-                /* loading region foreground */
-                <rect
-                  x={this._getXMax()}
-                  y={0}
-                  width={this.state.fullWidth}
-                  height={DEFAULT_SVG_HEIGHT}
-                  opacity={0.7}
-                  fill={'#cccccc'}/>
+              </LoadingVeil>
               }
             </Zoomable> : null}
         {
