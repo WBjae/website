@@ -2,8 +2,8 @@ import "babel-polyfill";
 import React from 'react';
 import { Provider, connect } from 'react-redux';
 import store from './store';
-import {updateRefseq} from './actions';
-import { render, unmountComponentAtNode } from 'react-dom';
+import { updateRefseq, updateViewWidth } from './actions';
+import { render, unmountComponentAtNode, findDOMNode } from 'react-dom';
 import { Button, ButtonGroup, ButtonToolbar, Glyphicon,
   FormGroup,
   ControlLabel,
@@ -312,7 +312,14 @@ class App extends React.Component {
     return () => {
       this.setState({
         activeTrackModal: trackId
-      }, () => this._viewerComponent.updateDimensions());
+      }, () => this._updateViewerDimension());
+    }
+  }
+
+  _updateViewerDimension = () => {
+    if (this._viewerComponent) {
+      const viewWidth = findDOMNode(this._viewerComponent).offsetWidth;
+      this.props.onDimensionUpdate(viewWidth);
     }
   }
 
@@ -320,7 +327,7 @@ class App extends React.Component {
     return () => {
       this.setState({
         activeTrackModal: null
-      }, () => this._viewerComponent.updateDimensions());
+      }, () => this._updateViewerDimension());
     }
   }
 
@@ -508,7 +515,8 @@ class App extends React.Component {
 }
 
 const mapDispatchToProps = (dispatch, ownProps) => ({
-  onRefseqUpdate: (refseqLength) => dispatch(updateRefseq(refseqLength))
+  onRefseqUpdate: (refseqLength) => dispatch(updateRefseq(refseqLength)),
+  onDimensionUpdate: (width) => dispatch(updateViewWidth(width))
 });
 const WrappedApp = connect(null, mapDispatchToProps)(App);
 function displayView(geneID, elementId) {

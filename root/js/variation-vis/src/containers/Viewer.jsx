@@ -1,6 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { connect } from 'react-redux'
+import { connect } from 'react-redux';
+import { updateViewWidth} from '../actions';
 import Zoomable from '../containers/ZoomableContainer';
 import MiniMap from '../containers/MiniMapContainer';
 import Tooltip from '../components/Tooltip';
@@ -22,7 +23,6 @@ class Viewer extends React.Component {
       //lastMoveTime: Number.NEGATIVE_INFINITY,
 
       // zoomPan scale and position
-      viewWidth: 500,
 
       // tooltips
       tooltips: [],
@@ -39,6 +39,8 @@ class Viewer extends React.Component {
     translate: React.PropTypes.number,
     referenceSequenceLength: React.PropTypes.number,
     fullWidth: React.PropTypes.number,
+    viewWidth: React.PropTypes.number,
+    onDimensionUpdate: React.PropTypes.func,
     isZoomPanOccuring: React.PropTypes.bool,
   }
 
@@ -57,7 +59,7 @@ class Viewer extends React.Component {
   getChildContext() {
     return {
       zoomFactor: this.props.scale,
-      viewWidth: this.state.viewWidth,
+      viewWidth: this.props.viewWidth,
       getXMin: this._getXMin,
       getXMax: this._getXMax,
       toWidth: this._toWidth,
@@ -67,29 +69,9 @@ class Viewer extends React.Component {
     }
   }
 
-  getZoomHandler = (rawMultiple) => {
-    return () => {
-      const center = (this._getXMin() + this._getXMax()) / 2;
-      this._zoomable.scaleBy(rawMultiple, center);
-    }
-  }
-
-  getPanHandler = (deltaRatio) => {
-    return () => {
-      const delta = (this._getXMax() - this._getXMin()) * deltaRatio;
-      this._zoomable.translateBy(delta);
-    }
-  }
-
-  handleZoomPanReset = () => {
-    this._zoomable.reset();
-  }
-
   updateDimensions = () => {
     const viewWidth = ReactDOM.findDOMNode(this).offsetWidth;
-    this.setState({
-      viewWidth: viewWidth,
-    });
+    this.props.onDimensionUpdate(viewWidth);
   }
 
   componentDidMount() {
@@ -156,14 +138,6 @@ class Viewer extends React.Component {
   }
 
 
-  shouldComponentUpdate(nextProps, nextState) {
-    // triggers state change Only if the zoomPanCallId has stablized,
-    // as zoomPanCallId changes when zoom pan is ongoing,
-    // which would result in a lot unnecessary calls.
-    // console.log(`${nextState.zoomPanCallId} ${this.state.zoomPanCallId}`);
-    return nextState.zoomPanCallId === this.state.zoomPanCallId;
-  }
-
   _getXMin = () => {
     const {translate, scale, fullWidth} = this.props;
     return translate * -1 / scale;
@@ -176,7 +150,7 @@ class Viewer extends React.Component {
 
   // convert apparent width to with used by SVG internally
   _toWidth = (apparentWidth) => {
-    const apparentFullWidth = this.state.viewWidth * this.props.scale;
+    const apparentFullWidth = this.props.viewWidth * this.props.scale;
     return apparentWidth * this.props.fullWidth / apparentFullWidth;
   }
 
@@ -184,7 +158,7 @@ class Viewer extends React.Component {
     const containerRect = this._viewerContainer.getBoundingClientRect();
     const offsetX = event.clientX - containerRect.left;
     const offsetY = event.clientY - containerRect.top;
-    const svgOffsetX = offsetX * this.props.fullWidth / (this.props.scale * this.state.viewWidth);
+    const svgOffsetX = offsetX * this.props.fullWidth / (this.props.scale * this.props.viewWidth);
     return {
       x: svgOffsetX + this._getXMin(),
       y: offsetY
@@ -194,7 +168,7 @@ class Viewer extends React.Component {
   _getViewCoords = (svgCoords) => {
     const viewCoordX = (svgCoordX) => {
       if (svgCoordX || svgCoordX === 0) {
-        return this.state.viewWidth * (svgCoordX - this._getXMin()) / (this._getXMax() - this._getXMin());
+        return this.props.viewWidth * (svgCoordX - this._getXMin()) / (this._getXMax() - this._getXMin());
       } else {
         null;
       }
@@ -375,11 +349,19 @@ const mapStateToProps = (state, ownProps) => {
     scale: state.viewer.scale,
     isZoomPanOccuring: state.viewer.isZoomPanOccuring,
     referenceSequenceLength: state.viewer.referenceSequenceLength,
-    fullWidth: getFullWidth(state, ownProps)
+    fullWidth: getFullWidth(state, ownProps),
+    viewWidth: state.viewer.viewWidth,
+  }
+}
+
+const mapDispatchToProps = (dispatch) => {
+  return {
+    onDimensionUpdate: (width) => dispatch(updateViewWidth(width))
   }
 }
 
 const ViewerContainer = connect(
-  mapStateToProps
+  mapStateToProps,
+  mapDispatchToProps
 )(Viewer);
 export default ViewerContainer;

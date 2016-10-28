@@ -4,6 +4,13 @@ export const updateRefseq = (length) => ({
   type: 'UPDATE_REFSEQ',
   length: length
 })
+
+// client width of the viewer
+export const updateViewWidth = (width) => ({
+  type: 'UPDATE_VIEW_WIDTH',
+  width: width
+})
+
 // zoom and pan
 export const startTransform = () => ({
   type: 'START_TRANSFORM'

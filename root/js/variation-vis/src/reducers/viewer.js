@@ -5,6 +5,7 @@ const initialState = {
   _translateX: 0,  // internal state, use translate instead unless absolutely necessary
   isZoomPanOccuring: false,
   referenceSequenceLength: null,
+  viewWidth: 500,
 }
 
 const viewer = (state = initialState, action) => {
@@ -35,6 +36,11 @@ const viewer = (state = initialState, action) => {
       return {
         ...state,
         referenceSequenceLength: action.length
+      }
+    case 'UPDATE_VIEW_WIDTH':
+      return {
+        ...state,
+        viewWidth: action.width
       }
     case 'REQUEST_RESET':
       return {
