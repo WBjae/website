@@ -27,29 +27,6 @@ export default class Zoomable extends Component {
     };
   }
 
-
-  scaleBy(kMultiple, center) {
-    const kCurrent = this.state.transform.scaleX;
-    this.scaleTo(kMultiple * kCurrent, center);
-  }
-
-  scaleTo(k, center) {
-    // transform point x such that it occupies centerPosition
-    // k * x + t = centerPosition
-    const t = this._getCenterPosition() - (k * center);
-    const node = ReactDOM.findDOMNode(this._zoomContainer);
-    select(node).call(this._zoom.transform, zoomIdentity.translate(t, 0).scale(k));
-  }
-
-  reset() {
-    this.scaleTo(0.9, this._getCenterPosition());
-  }
-
-  translateBy(t) {
-    const node = ReactDOM.findDOMNode(this._zoomContainer);
-    this._zoom.translateBy(select(node), t);
-  }
-
   _getXMin = () => {
     return this._getX(0);
   }
