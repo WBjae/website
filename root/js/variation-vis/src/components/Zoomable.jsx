@@ -117,12 +117,6 @@ export default class Zoomable extends Component {
   render() {
     return (
       <div>
-        <MiniMap
-          xMin={this._getXMin()}
-          xMax={this._getXMax()}
-          onUpdate={this._handleMiniMapUpdate}
-          fullWidth={this._getSVGWidth()}
-          coordinateMapping={this.props.coordinateMapping}/>
         <svg id="svg-browser"
           viewBox={this.props.viewBox.join(' ')}
           height="100%"
