@@ -8,6 +8,10 @@ const initialState = {
 }
 
 const viewer = (state = initialState, action) => {
+  const fullWidth = getFullWidth(state);
+  const center = computeSVGxCenter(state._translateX, state._scaleX, getFullWidth(state));
+  const xMin = computeSVGxMin(state._translateX, state._scaleX, getFullWidth(state));
+  const xMax = computeSVGxMax(state._translateX, state._scaleX, getFullWidth(state));
   switch (action.type) {
     case 'START_TRANSFORM':
       return {
@@ -35,19 +39,24 @@ const viewer = (state = initialState, action) => {
     case 'REQUEST_RESET':
       return {
         ...state,
-        ..._getTransform(state, 0.9, getFullWidth(state) / 2)
+        ..._getTransform(state, 0.9, fullWidth / 2)
       }
     case 'REQUEST_PAN':
-      const translate = (getSVGxMax(state) - getSVGxMin(state)) * action.panBy;
+      const translateDelta = (xMax - xMin) * action.panBy;
       return {
         ...state,
-        ..._getTransform(state, state._scaleX, getSVGxCenter(state) + translate)
+        ..._getTransform(state, state._scaleX, center + translateDelta)
       }
+      case 'REQUEST_PAN_TO':
+        return {
+          ...state,
+          ..._getTransform(state, state._scaleX, action.panCenter)
+        }
     case 'REQUEST_ZOOM':
       const scaleTo = action.zoomBy * state._scaleX;
       return {
         ...state,
-        ..._getTransform(state, scaleTo, getSVGxCenter(state))
+        ..._getTransform(state, scaleTo, center)
       }
     default:
       return state
@@ -62,8 +71,8 @@ const _getTransform = (state, scaleX, centerX) => {
   return {
     _scaleX: scaleX,
     _translateX: t,
-    scale: scaleX,
-    translate: t
+    // scale: scaleX,
+    // translate: t
   }
 }
 
@@ -71,19 +80,18 @@ export const getFullWidth = (state) => {
   return state.referenceSequenceLength * 10;
 };
 
-export const getSVGxMin = (state) => {
-  const {translate, scale} = state;
+export const computeSVGxMin = (translate, scale) => {
   return translate * -1 / scale;
 }
 
-export const getSVGxMax = (state) => {
-  const {translate, scale} = state;
-  const fullWidth = getFullWidth(state);
-  return (fullWidth - translate) / scale;
+export const computeSVGxMax = (translate, scale, fullWidth) => {
+  return (fullWidth - translate) / scale
 }
 
-export const getSVGxCenter = (state) => {
-  return (getSVGxMax(state) + getSVGxMin(state)) / 2;
+export const computeSVGxCenter = (translate, scale, fullWidth) => {
+  return (computeSVGxMin(translate, scale) +
+    computeSVGxMax(translate, scale, fullWidth)) / 2;
 }
+
 
 export default viewer;

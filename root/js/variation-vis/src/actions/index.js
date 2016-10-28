@@ -28,6 +28,11 @@ export const requestPan = (panBy) => ({
   panBy: panBy
 });
 
+export const requestPanTo = (panCenter) => ({
+  type: 'REQUEST_PAN_TO',
+  panCenter: panCenter
+})
+
 export const requestReset = () => ({
   type: 'REQUEST_RESET'
 });

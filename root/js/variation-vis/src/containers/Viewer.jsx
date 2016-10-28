@@ -2,6 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import { connect } from 'react-redux'
 import Zoomable from '../containers/ZoomableContainer';
+import MiniMap from '../containers/MiniMapContainer';
 import Tooltip from '../components/Tooltip';
 import Ruler from '../components/Ruler';
 import PrettyTrackSVGFilter from '../components/PrettyTrackSVGFilter';
@@ -250,6 +251,8 @@ class Viewer extends React.Component {
           position: 'relative',
           ...this.props.style
         }}>
+          {this.props.referenceSequenceLength ?
+            <MiniMap coordinateMapping={this._getDefaultCoordinateMap()}/> : null}
           {this.props.referenceSequenceLength ?
             <Zoomable
               viewBox={this.getViewBox()}
