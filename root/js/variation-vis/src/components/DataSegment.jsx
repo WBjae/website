@@ -53,7 +53,7 @@ export default class DataSegment extends React.Component {
 
   _getSegmentId = () => {
     const {trackId, x, width, y, height} = this.props;
-    return `${trackId}--${x}-${x + width}--${y}-{y + height}`;
+    return `${trackId}--${x}-${x + width}--${y}-${y + height}`;
   }
 
   _getSegmentRegion = () => {

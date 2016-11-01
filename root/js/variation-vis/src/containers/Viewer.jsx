@@ -1,10 +1,10 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { connect } from 'react-redux';
-import { updateViewWidth} from '../actions';
+import { updateViewWidth, addTooltip, removeTooltip } from '../actions';
 import Zoomable from '../containers/ZoomableContainer';
 import MiniMap from '../containers/MiniMapContainer';
-import Tooltip from '../components/Tooltip';
+import TooltipCollection from '../containers/TooltipCollectionContainer';
 import LoadingVeil from '../components/LoadingVeil';
 import Ruler from '../components/Ruler';
 import PrettyTrackSVGFilter from '../components/PrettyTrackSVGFilter';
@@ -99,46 +99,6 @@ class Viewer extends React.Component {
     return this._defaultCoordinateMapping;
   }
 
-
-  showTooltip = ({title, content, trackId, segmentId, event, segmentRegion}) => {
-    const newTooltip = {
-      segmentId: segmentId,
-      segmentRegion: segmentRegion,
-      trackId: trackId,
-      title: title,
-      content: content,
-      position: event ? this._getEventSVGCoords(event).x : null,
-    };
-
-    if (this.state.activeMarker !== null) {
-      this.setState((prevState) => {
-        const filteredTooltips = prevState.tooltips.filter((t) => t.segmentId !== newTooltip.segmentId);
-        return {
-          tooltips: filteredTooltips.concat(newTooltip),
-        };
-      })
-    } else {
-      this.setState({
-        tooltips: [newTooltip]
-      });
-    }
-
-  }
-
-
-
-  hideTooltip = ({segmentId}) => {
-    setTimeout(() => {
-      this.setState((prevState, currProps) => {
-        const filteredTooltips = prevState.tooltips.filter((t) => t.segmentId !== segmentId);
-        return {
-          tooltips: filteredTooltips
-        };
-      });
-    }, 300);
-  }
-
-
   _getXMin = () => {
     const {translate, scale, fullWidth} = this.props;
     return translate * -1 / scale;
@@ -165,26 +125,6 @@ class Viewer extends React.Component {
       y: offsetY
     }
   }
-
-  _getViewCoords = (svgCoords) => {
-    const viewCoordX = (svgCoordX) => {
-      if (svgCoordX || svgCoordX === 0) {
-        return this.props.viewWidth * (svgCoordX - this._getXMin()) / (this._getXMax() - this._getXMin());
-      } else {
-        null;
-      }
-    };
-    const left = viewCoordX(svgCoords.x);
-    const width = viewCoordX(svgCoords.x + svgCoords.width) - left;
-    return {
-      left: left,
-      width: width,
-      top: svgCoords.y,
-      height: svgCoords.height,
-    }
-  }
-
-
 
   // convert svg internal coordinate to length in the domain logic (reference)
   _toReferenceUnit = (width) => {
@@ -226,9 +166,10 @@ class Viewer extends React.Component {
           position: 'relative',
           ...this.props.style
         }}>
-          {this.props.referenceSequenceLength ?
-            <MiniMap coordinateMapping={this._getDefaultCoordinateMap()}/> : null}
-          {this.props.referenceSequenceLength ?
+          {this.props.referenceSequenceLength ? <MiniMap coordinateMapping={this._getDefaultCoordinateMap()}/> : null}
+          {this.props.referenceSequenceLength ? <div style={{
+              position: 'relative',
+            }}>
             <Zoomable
               viewBox={this.getViewBox()}
               coordinateMapping={this._getDefaultCoordinateMap()}
@@ -259,63 +200,16 @@ class Viewer extends React.Component {
                 </Marker> : null
               }
               <g>
-              {
-                // render tracks
-                React.Children.map(this.props.children, (child) => {
-                  if (child) {
-                    const coordinateMapping = child.props.coordinateMapping || (new CoordinateMappingHelper.LinearCoordinateMapping({
-                      sequenceLength: child.props.sequence ? child.props.sequence.length : child.props.sequenceLength,
-                      svgWidth: this.props.fullWidth
-                    }));
-                    const xMin = coordinateMapping.toSequenceCoordinate(this._getXMin());
-                    const xMax = coordinateMapping.toSequenceCoordinate(this._getXMax());
-                    const activeMarker = this.state.activeMarker !== null ?
-                      coordinateMapping.toSequenceCoordinate(this.state.activeMarker) : null;
-                    const newChild = React.cloneElement(child, {
-                      xMin: Math.floor(xMin),
-                      xMax: Math.ceil(xMax),
-                      activeMarker: activeMarker,
-                      coordinateMapping: coordinateMapping,
-                      onTooltipShow: this.showTooltip,
-                      onTooltipHide: this.hideTooltip,
-                    });
-                    return newChild;
-                  } else {
-                    return null;
-                  }
-                })
-              }
+              {this.props.children}
               </g>
               </LoadingVeil>
               }
-            </Zoomable> : null}
-        {
-          this.props.isZoomPanOccuring ?
-            null : this.state.tooltips.map((tooltip) => {
-
-              const segment = tooltip.segmentRegion;
-              const x = (tooltip.position || tooltip.position === 0) ?
-                tooltip.position : this.state.activeMarker;
-
-              if (x || x === 0) {
-                const targetRegion = {
-                  x: x,
-                  width: 1,
-                  y: segment.y + 10,
-                  height: segment.height
-                };
-                const targetBox = this._getViewCoords(targetRegion);
-
-                return (
-                  <Tooltip
-                    targetBox={targetBox}
-                    {...tooltip}/>
-                )
-              } else {
-                return null;
-              }
-            })
-          }
+            </Zoomable>
+            {
+              this.props.isZoomPanOccuring ? null : <TooltipCollection
+                activeMarker={this.state.activeMarker}/>
+            }
+          </div> : null}
       </div>
     );
   }
