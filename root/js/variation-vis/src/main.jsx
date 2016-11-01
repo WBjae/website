@@ -9,6 +9,7 @@ import { Button, ButtonGroup, ButtonToolbar, Glyphicon,
   ControlLabel,
   FormControl } from 'react-bootstrap';
 import Viewer from './containers/Viewer';
+import { wrapTrack } from './containers/TrackContainer';
 import Toolbar from './containers/Toolbar';
 import TrackLegendModal from './components/TrackLegendModal';
 import Sidebar from './components/Sidebar';
@@ -487,7 +488,7 @@ class App extends React.Component {
             {
               tracks.map((trackData, index) => {
                 const showTrack = trackData && (trackData.sequence || trackData.sequenceLength);
-                const TrackComponent = trackData.trackComponent || BasicTrack;
+                const TrackComponent = wrapTrack(trackData.trackComponent || BasicTrack);
 //                const {index} = trackData; // note use the index contained in the data
                 return showTrack ? <TrackComponent
                   {...trackData}

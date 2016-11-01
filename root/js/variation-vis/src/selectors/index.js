@@ -14,7 +14,7 @@ export const getSVGxMin = (state) => {
 export const getSVGxMax = (state) => {
   const {translate, scale} = state.viewer;
   const fullWidth = getFullWidth(state);
-  return computeSVGxMin(translate, scale, fullWidth);
+  return computeSVGxMax(translate, scale, fullWidth);
 }
 
 export const getInternalSVGxMin = (state) => {
