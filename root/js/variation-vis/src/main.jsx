@@ -22,6 +22,7 @@ class App extends React.Component {
 
   static propTypes = {
     geneID: React.PropTypes.string.isRequired,
+    targetSpecies: React.PropTypes.string.isRequired,
   }
 
   constructor(props) {
@@ -37,18 +38,18 @@ class App extends React.Component {
   }
 
   componentDidMount() {
-    this._getData(this.props.geneID);
+    this._getData(this.props.geneID, this.props.targetSpecies);
     // setTimeout(() =>
     //   this._setupZoomPan()
     //   , 5000);
   }
 
   componentWillReceiveProps(nextProps) {
-    this._getData(nextProps.geneID);
+    this._getData(nextProps.geneID, nextProps.targetSpecies);
   }
 
-  _getData(geneID) {
-    const model = new HomologyModel(geneID);
+  _getData(geneID, species) {
+    const model = new HomologyModel(geneID, species);
 
 
     const referencePromise = model.getAlignedDNA().then((data) => {
@@ -567,7 +568,8 @@ class GeneSearch extends React.Component {
           onKeyPress={this._handleKeyPress}/>
         <Button onClick={this._handleButtonClick}>Change gene</Button>
       </div>
-      <App geneID={this.state.geneID}/>
+      <App geneID={this.state.geneID}
+        targetSpecies={this.state.geneID.match(/^WB.*/) ? 'homo_sapiens' : 'caenorhabditis_elegans_prjna13758'}/>
     </div>)
   }
 
