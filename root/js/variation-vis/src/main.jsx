@@ -45,12 +45,18 @@ class App extends React.Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    this._getData(nextProps.geneID, nextProps.targetSpecies);
+    if (this.props.geneID !== nextProps.geneID ||
+      this.props.targetSpecies !== nextProps.targetSpecies) {
+      this._getData(nextProps.geneID, nextProps.targetSpecies);
+    }
   }
 
   _getData(geneID, species) {
     const model = new HomologyModel(geneID, species);
 
+    this.setState({
+      tracks: []
+    });
 
     const referencePromise = model.getAlignedDNA().then((data) => {
       const referenceSequence = data.source.align_seq;
