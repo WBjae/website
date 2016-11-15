@@ -43,6 +43,10 @@ class App extends React.Component {
     //   , 5000);
   }
 
+  componentWillReceiveProps(nextProps) {
+    this._getData(nextProps.geneID);
+  }
+
   _getData(geneID) {
     const model = new HomologyModel(geneID);
 
@@ -515,12 +519,66 @@ class App extends React.Component {
 
 }
 
+class GeneSearch extends React.Component {
+  static propTypes = {
+    defaultGeneID: React.PropTypes.string
+  }
+
+  constructor(props) {
+    super(props);
+    this.state = {
+      text: '',
+      geneID: props.defaultGeneID
+    }
+  }
+
+  _handleButtonClick = () => {
+    if (this.state.geneID !== this.state.text) {
+      this.setState((prevState) => {
+        console.log(`gene id ${prevState.text} is requested`);
+        return {
+          geneID: prevState.text
+        };
+      });
+    }
+  }
+
+  _handleQueryChange = (event) => {
+    this.setState({
+      text: event.target.value
+    });
+  }
+
+  _handleKeyPress = (event) => {
+    console.log(`key pressed ${event.keyCode} ${event.which}`);
+    if (event.keyCode === 13 || event.which === 13){
+      // Enter pressed
+      this._handleButtonClick()
+    }
+  }
+
+  render() {
+    console.log(`render with ${this.state.geneID}`);
+    return (<div>
+      <div
+        className="gene-search"
+        onSubmit={() => false}>
+        <FormControl onChange={this._handleQueryChange}
+          onKeyPress={this._handleKeyPress}/>
+        <Button onClick={this._handleButtonClick}>Change gene</Button>
+      </div>
+      <App geneID={this.state.geneID}/>
+    </div>)
+  }
+
+}
+
 
 function displayView(geneID, elementId) {
   const element = document.getElementById(elementId);
   if (element) {
     unmountComponentAtNode(element);
-    render(<App geneID={geneID}/>, element);
+    render(<GeneSearch defaultGeneID={geneID}/>, element);
   }
 };
 
