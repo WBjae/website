@@ -79,36 +79,42 @@ module.exports = {
     publicPath: '/static',
     proxy: {
       '/rest/*': {
-        target: 'http://www.wormbase.org',
+        target: 'http://staging.wormbase.org',
+        changeOrigin: true,
         // rewrite: function(req) {
         //   req.url = req.url.replace(/^\/api/, '');
         // },
         secure: false,
       },
+      '/search/*': {
+        target: 'http://staging.wormbase.org',
+        changeOrigin: true, // changes the origin of the host header to the target URL,
+        secure: false,
+      },
       '/species/*': {
-        target: 'http://www.wormbase.org',
+        target: 'http://staging.wormbase.org',
         changeOrigin: true, // changes the origin of the host header to the target URL,
         secure: false,
       },
       '/resources/*': {
-        target: 'http://www.wormbase.org',
+        target: 'http://staging.wormbase.org',
         changeOrigin: true, // changes the origin of the host header to the target URL,
         secure: false,
       },
       '/js/*': {
-        target: 'http://www.wormbase.org',
+        target: 'http://staging.wormbase.org',
         changeOrigin: true, // changes the origin of the host header to the target URL,
         // otherwise an Nginx landing page is the response somehow...
         secure: false,
       },
       '/css/*': {
-        target: 'http://www.wormbase.org',
+        target: 'http://staging.wormbase.org',
         changeOrigin: true, // changes the origin of the host header to the target URL,
         // otherwise an Nginx landing page is the response somehow...
         secure: false,
       },
       '/img/*': {
-        target: 'http://www.wormbase.org',
+        target: 'http://staging.wormbase.org',
         changeOrigin: true, // changes the origin of the host header to the target URL,
         // otherwise an Nginx landing page is the response somehow...
         secure: false,
