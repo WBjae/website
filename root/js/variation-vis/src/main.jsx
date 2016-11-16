@@ -177,11 +177,17 @@ class App extends React.Component {
     });
 
     // load concervation track
-    setTimeout(() => {
-      Promise.all([model.getAlignedSourceProtein(), model.getAlignedTargetProtein()]).then(([sourceData, targetData]) => {
-        const sourceSequence = sourceData.align_seq;
-        const targetSequence = targetData.align_seq;
+    Promise.all([model.getAlignedSourceProtein(), model.getAlignedTargetProtein()]).then(([sourceData, targetData]) => {
+      const sourceSequence = sourceData.align_seq;
+      const targetSequence = targetData.align_seq;
 
+      // placeholder
+      this._setTrackState({
+        id: 'conservation',
+        name: 'Protein Conservation',
+      });
+
+      setTimeout(() => {
         this._setTrackState({
           id: 'conservation',
           sequenceLength: sourceSequence.length,
@@ -189,8 +195,9 @@ class App extends React.Component {
           trackComponent: ProteinConservationTrack,
           name: 'Protein Conservation',
         });
-      });
-    }, 5000);
+      }, 3000);
+
+    });
 
     // load variation tracks
     model.sourceGeneModel.then((sourceGeneModel) => {
