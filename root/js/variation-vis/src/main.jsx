@@ -558,9 +558,12 @@ class GeneSearch extends React.Component {
   _handleButtonClick = () => {
     if (this.state.geneID !== this.state.partial) {
       this.setState((prevState) => {
-        console.log(`gene id ${prevState.partial} is requested`);
+        const geneID = prevState.partial.match(/^ENSG\d{11}|WBGene\d{8}/) ?
+          prevState.partial : prevState.autocomplete[0].id;
+        console.log(`gene id ${geneID} is requested`);
         return {
-          geneID: prevState.partial,
+          geneID: geneID,
+          partial: geneID,
           focus: false
         };
       });
