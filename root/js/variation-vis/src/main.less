@@ -59,10 +59,45 @@ body {
 div.gene-search {
   float: right;
   padding: 0.5em;
+  margin-right: 0.5em;
   background-color: #999;
   border-radius: 0.5em;
+  position: relative;
+}
+
+div.gene-search:focus {
+  outline: transparent
 }
 
 div.gene-search > * {
   margin: 0.5em;
+}
+
+div.gene-search > input {
+  width: 150px;
+}
+
+div.gene-search > ul {
+  position: absolute;
+  z-index: 100;
+  background-color: white;
+  list-style-type: none;
+  padding: 0.5em;
+  margin: 0;
+  border: 1px solid #999;
+  overflow: hidden;
+  left: 15px;
+  top: 33px;
+  width: 150px;
+}
+
+div.gene-search > ul > li:hover {
+  text-decoration: underline;
+}
+
+span {
+  margin: 0 0.5em;
+}
+.fade {
+  opacity: 0.5;
 }

@@ -1,6 +1,7 @@
 import "babel-polyfill";
 import React from 'react';
 import { render, unmountComponentAtNode } from 'react-dom';
+import jquery from 'jquery';
 import { Button, ButtonGroup, ButtonToolbar, Glyphicon,
   FormGroup,
   ControlLabel,
@@ -547,26 +548,53 @@ class GeneSearch extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      text: '',
-      geneID: props.defaultGeneID
+      partial: props.defaultGeneID,
+      geneID: props.defaultGeneID,
+      autocomplete: [],
+      focus: true
     }
   }
 
   _handleButtonClick = () => {
-    if (this.state.geneID !== this.state.text) {
+    if (this.state.geneID !== this.state.partial) {
       this.setState((prevState) => {
-        console.log(`gene id ${prevState.text} is requested`);
+        console.log(`gene id ${prevState.partial} is requested`);
         return {
-          geneID: prevState.text
+          geneID: prevState.partial,
+          focus: false
         };
       });
     }
   }
 
   _handleQueryChange = (event) => {
+    const partial = event.target.value
     this.setState({
-      text: event.target.value
+      partial: partial
     });
+    if (this.timeoutID) {
+      clearTimeout(this.timeoutID);
+    }
+
+    if (partial.length > 1) {
+      this.timeoutID = setTimeout(() => {
+        const autocompleteUrl = `/search/autocomplete/gene?term=${partial}`
+        jquery.ajax(autocompleteUrl, {
+          success: (result) => {
+            const filteredResults = result.filter((r) => {
+              return ['Homo', 'Caenorhabditis'].find((genus) => genus === r.taxonomy.genus)
+            });
+            console.log(filteredResults);
+            this.setState({
+              autocomplete: filteredResults
+            })
+          },
+          error: ([,,error]) => {
+            console.log(`Error: ${error}`);
+          },
+        });
+      }, 500);
+    }
   }
 
   _handleKeyPress = (event) => {
@@ -577,15 +605,55 @@ class GeneSearch extends React.Component {
     }
   }
 
+  _handleUseSuggestion = (event, suggestion) => {
+    console.log(suggestion);
+    this.setState({
+      partial: suggestion.id,
+      focus: false
+//      autocomplete: []
+    })
+  }
+
+  _handleInputFocus = (event) => {
+    this.setState({
+      focus: true
+    });
+  }
+
+  _handleInputBlur = (event) => {
+    console.log(event.relatedTarget);
+    this.setState({
+      focus: false
+    });
+  }
+
   render() {
     console.log(`render with ${this.state.geneID}`);
     return (<div>
       <div
         className="gene-search"
+        tabIndex="1"
+        onFocus={this._handleInputFocus}
+        onBlur={this._handleInputBlur}
         onSubmit={() => false}>
-        <FormControl onChange={this._handleQueryChange}
+        <FormControl
+          value={this.state.partial}
+          onChange={this._handleQueryChange}
           onKeyPress={this._handleKeyPress}/>
         <Button onClick={this._handleButtonClick}>Change gene</Button>
+        {
+          this.state.autocomplete.length ? <ul
+            style={{
+            visibility: this.state.focus ? 'visible' : 'hidden'
+          }}>
+          {
+            this.state.autocomplete.map((item) => <li onClick={(event) => this._handleUseSuggestion(event, item)}>
+              {item.label}
+              <span className="fade">{`${item.taxonomy.genus[0]}. ${item.taxonomy.species}`}</span>
+            </li>)
+          }
+          </ul> : null
+        }
       </div>
       <App geneID={this.state.geneID}
         targetSpecies={this.state.geneID.match(/^WB.*/) ? 'homo_sapiens' : 'caenorhabditis_elegans_prjna13758'}/>
