@@ -190,9 +190,12 @@ class App extends React.Component {
       });
     });
 
+
     // load variation tracks
     model.sourceGeneModel.then((sourceGeneModel) => {
-      const variationsPromise = sourceGeneModel.getAlignedVariations('wormbase');
+      const variationDatabase = this.props.geneID.match(/^WB.*/) ?
+        'wormbase' : 'ensembl';
+      const variationsPromise = sourceGeneModel.getAlignedVariations(variationDatabase);
       const proteinLengthPromise = sourceGeneModel.getAlignedProteinLength();
       const speciesPromise = sourceGeneModel.getSummary();
       return Promise.all([speciesPromise, variationsPromise, proteinLengthPromise]);
@@ -226,7 +229,9 @@ class App extends React.Component {
 
     /* human variations */
     model.targetGeneModel.then((targetGeneModel) => {
-      const variationsPromise = targetGeneModel.getAlignedVariations('ensembl');
+      const variationDatabase = this.props.targetSpecies === 'homo_sapiens' ?
+        'ensembl' : 'wormbase';
+      const variationsPromise = targetGeneModel.getAlignedVariations(variationDatabase);
       const proteinLengthPromise = targetGeneModel.getAlignedProteinLength();
       const speciesPromise = targetGeneModel.getSummary();
       return Promise.all([speciesPromise, variationsPromise, proteinLengthPromise]);
