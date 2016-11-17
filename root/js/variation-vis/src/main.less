@@ -77,22 +77,32 @@ div.gene-search > input {
   width: 150px;
 }
 
-div.gene-search > ul {
+div.gene-search > ul,
+div.gene-search > .error-message {
   position: absolute;
-  z-index: 100;
-  background-color: white;
-  list-style-type: none;
-  padding: 0.5em;
-  margin: 0;
-  border: 1px solid #999;
   overflow: hidden;
   left: 15px;
   top: 33px;
   width: 150px;
 }
 
+div.gene-search > ul {
+  z-index: 100;
+  background-color: white;
+  list-style-type: none;
+  padding: 0.5em;
+  margin: 0;
+  border: 1px solid #999;
+}
+
 div.gene-search > ul > li:hover {
   text-decoration: underline;
+}
+
+div.gene-search > .error-message {
+  font-size: 10px;
+  margin: 0;
+  color: purple;
 }
 
 span {

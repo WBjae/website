@@ -551,21 +551,30 @@ class GeneSearch extends React.Component {
       partial: props.defaultGeneID,
       geneID: props.defaultGeneID,
       autocomplete: [],
-      focus: true
+      focus: true,
+      errorMessage: ''
     }
   }
 
+  _cleanQuery = (state = this.state) => {
+    let clean;
+    if (state.partial.match(/^ENSG\d{11}|WBGene\d{8}$/)) {
+      clean = state.partial;
+    } else {
+      clean = state.autocomplete.length ? state.autocomplete[0].id : '';
+    }
+    return clean;
+  }
+
   _handleButtonClick = () => {
-    if (this.state.geneID !== this.state.partial) {
+    if (this.state.geneID !== this.state.partial && !this.state.errorMessage) {
       this.setState((prevState) => {
-        const geneID = prevState.partial.match(/^ENSG\d{11}|WBGene\d{8}/) ?
-          prevState.partial : prevState.autocomplete[0].id;
-        console.log(`gene id ${geneID} is requested`);
-        return {
+        const geneID = this._cleanQuery(prevState);
+        return geneID ? {
           geneID: geneID,
           partial: geneID,
           focus: false
-        };
+        } : null;
       });
     }
   }
@@ -573,7 +582,8 @@ class GeneSearch extends React.Component {
   _handleQueryChange = (event) => {
     const partial = event.target.value
     this.setState({
-      partial: partial
+      partial: partial,
+      errorMessage: this._validate(partial)
     });
     if (this.timeoutID) {
       clearTimeout(this.timeoutID);
@@ -587,21 +597,27 @@ class GeneSearch extends React.Component {
             const filteredResults = result.filter((r) => {
               return ['Homo', 'Caenorhabditis'].find((genus) => genus === r.taxonomy.genus)
             });
-            console.log(filteredResults);
             this.setState({
               autocomplete: filteredResults
             })
           },
           error: ([,,error]) => {
-            console.log(`Error: ${error}`);
+            alert(`Error: ${error}`);
           },
         });
       }, 500);
     }
   }
 
+  _validate = (partial) => {
+    if (partial.length < 5 || this._cleanQuery()) {
+      return '';
+    } else {
+      return 'Invalid gene ID';
+    }
+  }
+
   _handleKeyPress = (event) => {
-    console.log(`key pressed ${event.keyCode} ${event.which}`);
     if (event.keyCode === 13 || event.which === 13){
       // Enter pressed
       this._handleButtonClick()
@@ -609,10 +625,10 @@ class GeneSearch extends React.Component {
   }
 
   _handleUseSuggestion = (event, suggestion) => {
-    console.log(suggestion);
     this.setState({
       partial: suggestion.id,
-      focus: false
+      focus: false,
+      errorMessage: ''
 //      autocomplete: []
     })
   }
@@ -624,14 +640,12 @@ class GeneSearch extends React.Component {
   }
 
   _handleInputBlur = (event) => {
-    console.log(event.relatedTarget);
     this.setState({
       focus: false
     });
   }
 
   render() {
-    console.log(`render with ${this.state.geneID}`);
     return (<div>
       <div
         className="gene-search"
@@ -657,6 +671,7 @@ class GeneSearch extends React.Component {
           }
           </ul> : null
         }
+        <span className="error-message">{this.state.errorMessage}</span>
       </div>
       <App geneID={this.state.geneID}
         targetSpecies={this.state.geneID.match(/^WB.*/) ? 'homo_sapiens' : 'caenorhabditis_elegans_prjna13758'}/>
