@@ -219,7 +219,7 @@ export default class GeneModel extends WBDataModel {
       return dat.aa_position || dat.aa_position === 0;
     }).map((dat) => {
       const aa_position = parseInt(dat.aa_position);
-      const substitution = dat.composite_change.match(/(\w+?)\d+(\w+)/);
+      const substitution = dat.composite_change[0].match(/(\w+?)\d+(\w+)/);
       const [,before, after] = substitution;
       return {
         ...dat,
