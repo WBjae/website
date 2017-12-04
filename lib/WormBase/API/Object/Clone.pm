@@ -361,6 +361,13 @@ sub _build_tracks {
     };
 }
 
+sub _build_jbrowse_tracks {
+    return {
+        description => "JBrowse tracks",
+        data        => ["Genes", "Clones", "Links and Superlinks", "Contig submissions"]
+    };
+}
+
 sub _build__segments {
     my ($self) = @_;
     # TH: I don't think it's correct to use the method "region" here.

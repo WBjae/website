@@ -77,6 +77,20 @@ has 'tracks' => (
         };
     }
 );
+ 
+
+has 'jbrowse_tracks' =>(
+    is      => 'ro',
+    lazy    => 1,
+    default => sub {
+        my $self = shift;
+        return {
+            description => 'tracks displayed in JBrowse',
+            data        => $self->object->Corresponding_transposon ? ["Transposons", "Transposon Genes"] : ["Genes","Classical alleles","Clones"],
+        };
+    }
+);
+
 
 
 has 'alleles_count' => (

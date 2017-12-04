@@ -40,6 +40,13 @@ has 'tracks' => (
 	builder  => '_build_tracks',
 );
 
+has 'jbrowse_tracks' => (
+    is       => 'ro',
+    required => 1,
+        lazy     => 1,
+        builder  => '_build_jbrowse_tracks',
+);
+
 has 'genetic_position' => (
     is       => 'ro',
     required => 1,

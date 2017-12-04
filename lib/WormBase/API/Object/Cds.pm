@@ -189,6 +189,16 @@ sub _build_tracks {
     };
 }
 
+sub _build_jbrowse_tracks {
+    my ($self) = @_;
+
+    return {
+        description => 'tracks to display in JBrowse',
+        data => $self->_parsed_species =~ /elegans/
+            ? ($self->method->{data}{method} eq 'history') ? ["Historical Genes"] : ["Genes", "Transposons", "Transposon Genes", "EST (Best)", "Protein Motifs"] : undef,
+    };
+}
+
 # genomic_image { }
 # Supplied by Role
 
